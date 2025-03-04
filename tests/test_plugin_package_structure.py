@@ -8,7 +8,9 @@ import pytest
 from pathlib import Path
 import importlib
 import pkgutil
+from collections.abc import Iterable
 
+from pymodaq_data import Q_, Unit
 
 MANDATORY_MOVE_METHODS = ['ini_attributes', 'get_actuator_value', 'close', 'commit_settings',
                           'ini_stage', 'move_abs', 'move_home', 'move_rel', 'stop_motion']
@@ -76,6 +78,17 @@ def test_move_has_mandatory_methods():
         for meth in MANDATORY_MOVE_METHODS:
             assert hasattr(klass, meth)
 
+def test_move_has_correct_units():
+    plugin_list, move_mod = get_move_plugins()
+    for plug in plugin_list:
+        name = plug.split('daq_move_')[1]
+        klass = getattr(getattr(move_mod, plug), f'DAQ_Move_{name}')
+        if not isinstance(klass._controller_units, list):
+            units = [klass._controller_units]
+        else:
+            units = klass._controller_units
+        for unit in units:
+            Unit(unit)  # check if the unit is known from pint
 
 @pytest.mark.parametrize('dim', ('0D', '1D', '2D', 'ND'))
 def test_viewer_has_mandatory_methods(dim):
