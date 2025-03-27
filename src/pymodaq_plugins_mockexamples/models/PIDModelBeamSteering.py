@@ -5,8 +5,9 @@ from scipy.ndimage import center_of_mass
 
 from pymodaq_data.data import DataToExport, DataCalculated
 
-from pymodaq.extensions.pid.utils import PIDModelGeneric, DataToActuatorPID, main
-from pymodaq.utils.data import DataActuator
+
+from pymodaq.extensions.pid.utils import PIDModelGeneric, main
+from pymodaq.utils.data import DataActuator, DataToActuators
 
 
 class PIDModelBeamSteering(PIDModelGeneric):
@@ -61,7 +62,7 @@ class PIDModelBeamSteering(PIDModelGeneric):
                                                  data=[np.array([self.curr_input[ind]])])
                                   for ind in range(len(self.curr_input))])
 
-    def convert_output(self, outputs: List[float], dt, stab=True) -> DataToActuatorPID:
+    def convert_output(self, outputs: List[float], dt, stab=True) -> DataToActuators:
         """
         Convert the output of the PID in units to be fed into the actuator
         Parameters
@@ -76,12 +77,12 @@ class PIDModelBeamSteering(PIDModelGeneric):
         #print('output converted')
         
         self.curr_output = outputs
-        return DataToActuatorPID('pid', mode='rel',
+        return DataToActuators('pid', mode='rel',
                                  data=[DataActuator(self.actuators_name[ind], data=outputs[ind])
                                        for ind in range(len(outputs))])
 
 
 if __name__ == '__main__':
-    main("beam_steering_mock.xml")
+    main("beam_steering")
 
 
