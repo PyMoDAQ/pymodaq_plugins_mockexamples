@@ -18,6 +18,7 @@ class Harmonics(ActuatorWrapperWithTauMultiAxes):
         super().__init__()
         self._n_harmonics = 3
         self._omega0 = Q_(nm2eV(800), 'eV')
+        self._omega_noise = Q_(0.2, 'eV')
         self._domega_ev = Q_(0.2, 'eV')
         self._npts = 512
         self._current_value = 1.0
@@ -36,6 +37,14 @@ class Harmonics(ActuatorWrapperWithTauMultiAxes):
         return Q_(self.amplitude, self.units[0])
 
     @property
+    def omega_noise(self):
+        return self._omega_noise
+
+    @omega_noise.setter
+    def omega_noise(self, omega_eV: float):
+        self._omega_noise = Q_(omega_eV, 'eV')
+
+    @property
     def n_harmonics(self) -> int:
         return self._n_harmonics
 
@@ -51,7 +60,7 @@ class Harmonics(ActuatorWrapperWithTauMultiAxes):
         axis = self.get_axis()
         spectrum = Q_(np.zeros((self._npts,)))
         for ind in range(self._n_harmonics):
-            spectrum += mutils.gauss1D(axis, (ind+1) * self._omega0, self._domega_ev)
+            spectrum += mutils.gauss1D(axis, (ind+1) * self._omega0 + self._omega_noise, self._domega_ev)
         spectrum *= self._current_values[0]
         spectrum += 0.1 * np.random.random_sample((self._npts,))
         return spectrum
