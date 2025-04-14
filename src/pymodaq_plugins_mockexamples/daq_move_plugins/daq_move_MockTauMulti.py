@@ -17,7 +17,7 @@ class DAQ_Move_MockTauMulti(DAQ_Move_base):
 
     is_multiaxes = True  # set to True if this plugin is controlled for a multiaxis controller (with a unique communication link)
     axes_names = ActuatorWrapperWithTauMultiAxes.axes
-    _epsilon = ActuatorWrapperWithTauMultiAxes._epsilon
+    _epsilon = ActuatorWrapperWithTauMultiAxes.epsilons
     params = \
         [
             {'title': 'Tau (ms):', 'name': 'tau', 'type': 'int', 'value': 500, 'tip': 'Characteristic evolution time'},
