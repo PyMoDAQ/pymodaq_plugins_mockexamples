@@ -26,10 +26,11 @@ class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
          
     """
     params = comon_parameters+[
+        {'title': 'N harmonics', 'name': 'n_harmonics', 'type': 'int', 'value': 3},
+        {'title': 'Omega Noise eV', 'name': 'omega_noise', 'type': 'float', 'value': 0.0},
         ]
 
     def ini_attributes(self):
-
         self.controller: Optional[Harmonics] = None
 
     def commit_settings(self, param: Parameter):
@@ -40,7 +41,10 @@ class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        pass
+        if param.name() == 'omega_noise':
+            self.controller.omega_noise = param.value()
+        elif param.name() == "n_harmonics":
+            self.controller.n_harmonics = param.value()
 
     def ini_detector(self, controller=None):
         """Detector communication initialization
@@ -61,6 +65,10 @@ class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
                                new_controller=None)
         if self.is_master:
             self.controller = Harmonics()
+
+        self.controller.omega_noise = self.settings['omega_noise']
+        self.controller.amplitude = 1.
+        self.controller.n_harmonics = self.settings['n_harmonics']
 
         info = "Whatever info you want to log"
         initialized = True
