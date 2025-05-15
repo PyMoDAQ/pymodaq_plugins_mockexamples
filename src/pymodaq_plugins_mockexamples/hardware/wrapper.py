@@ -142,10 +142,11 @@ class ActuatorWrapperWithTau(ActuatorWrapper):
 
 class ActuatorWrapperWithTauMultiAxes(ActuatorWrapper):
 
-    axes = ['X', 'Y', 'Theta']
-    _units = ['mm', 'mm', '°']
-    _epsilon = 0.01
-    _tau = 0.5 #s
+    axes = ['X', 'Y', 'Theta', 'Power', 'Temp', 'Frequency']
+    _units = ['µm', 'mm', '°', 'mW', '°C', 'Hz']
+    units = _units
+    epsilons = [1, 0.0001, 1, 1, 0.1]  # the precision is therefore 1 µm, 1e-4 mm and 1° and 1 mW and 0.1 degree
+    _tau = 0.5  # in s
 
     def __init__(self):
         super().__init__()
