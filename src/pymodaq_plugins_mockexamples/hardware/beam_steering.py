@@ -8,7 +8,7 @@ import numpy as np
 import pymodaq_utils.math_utils as mutils
 
 from pymodaq_plugins_mockexamples.hardware.camera_wrapper import Camera
-from pymodaq_plugins_mockexamples.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
+from pymodaq_plugins_mock.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
 
 
 class BeamSteeringActuators(ActuatorWrapperWithTauMultiAxes):
