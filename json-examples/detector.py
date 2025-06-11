@@ -3,6 +3,14 @@ import math
 
 from instrument import Axis, JSONDetector
 
+def int_greater_than_zero(value):
+    try:
+        value = int(value)
+        if value < 1:
+            raise argparse.ArgumentTypeError("{} is not 1 or more".format(value))
+    except ValueError:
+        raise argparse.ArgumentTypeError("{} is not an integer".format(value))
+    return value
 
 def get_args() -> dict:
     parser = argparse.ArgumentParser(description="Parse arguments to build a detector and use it with JSON-LECO")
@@ -36,12 +44,17 @@ def get_args() -> dict:
         help="Label of each channel of acquired data"
     )
 
-    parser.add_argument('--rgb', action='store_true', help='Enable RGB mode')
+    parser.add_argument(
+        "-c", "--channels",
+        default=1,
+        type=int_greater_than_zero,
+        help="Number of signals acquired by the detector (3 channels in 2D = RGB image)"
+    )
+
+
 
     args = parser.parse_args()
 
-    if args.rgb:
-        args.dimension = 2
 
     if args.dimension >= 1 and args.x_axis_len is None:
         parser.error("x_axis_len is required when dimension is 1 or 2.")

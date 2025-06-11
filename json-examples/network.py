@@ -306,8 +306,8 @@ class Communicator:
         trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SET_UNITS.to_json(units=units))
         self.send(trame)
 
-    def send_position(self, position : Union[list[list[float]], float]):
-        trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SEND_POSITION.to_json(position=position))
+    def send_position(self, data : dict):
+        trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SEND_POSITION.to_json(data=data))
         self.send(trame)
     
     def set_data(self, data : dict):
@@ -318,8 +318,8 @@ class Communicator:
         trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SET_DATA.to_json(data=data))
         self.send(trame)
     
-    def set_move_done(self, position : float):
-        trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SET_MOVE_DONE.to_json(position=position))
+    def set_move_done(self, data : dict):
+        trame = LECOTrame(self._receiver, self._fullname, RPCMethod.SET_MOVE_DONE.to_json(data=data))
         self.send(trame)
 
     def set_remote_name(self, receiver : str):

@@ -3,8 +3,8 @@ import time
 from enum import StrEnum, auto
 from typing import Iterable, Optional, Union
 
-from driver import (ActuatorDriver, Bounds, DetectorDriver, Dimension,
-                    RGBCameraDriver, SLMDriver)
+from driver import (ActuatorDriver, Bounds, DetectorDriver,
+                    Dimension, SLMDriver)
 from network import Communicator, JSONRPCMessage, LECOTrame, RPCMethod
 from utils import ExitFlag
 
@@ -107,7 +107,7 @@ class JSONDetector:
         }
 
     def __init__(self, name : str, dimension : Dimension, x_axis_len : int = 0, y_axis_len : int = 0,
-        axes : list[Axis] = [], rgb : bool = False, labels : list[str] = []
+        axes : list[Axis] = [], labels : list[str] = [], channels : int = 1
     ):        
         self.__init_states_and_transitions()
         if axes:
@@ -117,10 +117,8 @@ class JSONDetector:
                 y_axis_len = len(axes[1])
 
         self._name = name
-        if not rgb:
-            self._driver = DetectorDriver(dimension=dimension, x_axis_len=x_axis_len, y_axis_len=y_axis_len, labels=labels)
-        else:
-            self._driver = RGBCameraDriver(x_axis_len=x_axis_len, y_axis_len=y_axis_len, labels=labels)
+        self._driver = DetectorDriver(dimension=dimension, x_axis_len=x_axis_len, y_axis_len=y_axis_len, labels=labels, channels=channels)
+
         self._axes = axes
         self._communicator = Communicator(name)
         self.state = LECOState.SIGNED_OUT
@@ -190,7 +188,8 @@ class JSONDetector:
                 self._communicator.set_data({
                     'data'   : self._driver.acquire(),
                     'axes'   : [axis.to_dict() for axis in self._axes],
-                    'labels' : self._driver.labels
+                    'labels' : self._driver.labels,
+                    'multichannel' : self._driver.is_multichannel()
                 })
                 time.sleep(0.04)
 
@@ -227,7 +226,8 @@ class JSONDetector:
         self._communicator.set_data({
             'data'   : self._driver.acquire(), 
             'axes'   : [axis.to_dict() for axis in self._axes],
-            'labels' : self._driver.labels
+            'labels' : self._driver.labels,
+            'multichannel' : self._driver.is_multichannel()
         })
 
     def _on_stop_grab(self, trame : LECOTrame):
@@ -356,9 +356,9 @@ class JSONActuator:
             position = self._driver.position
             while not self._moving_thread_stop_event.is_set() and self._driver.is_moving():
                 position = self._driver.position
-                self._communicator.send_position(position)
+                self._communicator.send_position({'position' : position})
                 time.sleep(0.1)
-            self._communicator.set_move_done(position)
+            self._communicator.set_move_done({'position' : position})
 
         if not (hasattr(self, '_moving_thread') and self._moving_thread.is_alive()):
             self._moving_thread_stop_event : threading.Event = threading.Event()
@@ -385,21 +385,20 @@ class JSONActuator:
         self._communicator.send(trame.to_response())
 
     def _on_move_home(self, trame: LECOTrame):
-        self._driver.move_at(self._driver.home)
+        self._driver.move_at(self._driver.home, rel=False)
         self._communicator.send(trame.to_response())
         self._start_move()
 
 
     def _on_move_abs(self, trame: LECOTrame):
         message = JSONRPCMessage.from_json(trame.payload.decode()).to_dict()
-        print(message)
-        self._driver.move_at(message['params']['position'])
+        self._driver.move_at(message['params']['position'], rel=False)
         self._communicator.send(trame.to_response())
         self._start_move()
 
     def _on_move_rel(self, trame: LECOTrame):
         message = JSONRPCMessage.from_json(trame.payload.decode()).to_dict()
-        self._driver.move_at(self._driver.position + message['params']['position'])
+        self._driver.move_at(message['params']['position'], rel=True)
         self._communicator.send(trame.to_response())
         self._start_move()
 
@@ -411,7 +410,7 @@ class JSONActuator:
         self._communicator.send(trame.to_response())
         if self._driver.has_units():
             self._communicator.set_units(self._driver.units)
-        self._communicator.send_position(self._driver.position)
+        self._communicator.send_position({'position' : self._driver.position})
 
     def _on_discover(self, trame : LECOTrame):
         raise NotImplementedError

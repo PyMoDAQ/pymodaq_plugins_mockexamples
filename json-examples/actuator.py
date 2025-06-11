@@ -60,7 +60,6 @@ def get_args() -> dict:
 
     return vars(args)
 
-
 def main():
     args  = get_args()
     actuator = JSONActuator('actuator', **args)

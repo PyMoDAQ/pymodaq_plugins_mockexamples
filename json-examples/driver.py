@@ -35,6 +35,7 @@ class ActuatorDriver:
 
         self._min, self._max = sorted([bounds['min'], bounds['max']])
         
+        self._channels = 1
         self._home = self._bounded(home) 
         self._position = self._bounded(home)
         self.__target = self._bounded(home)
@@ -88,10 +89,12 @@ class ActuatorDriver:
         return max(self._min, min(value, self._max))
 
 
-    def move_at(self, value : float):
+    def move_at(self, value : float, rel : bool = False):
         '''
            simulate a move to a postion
         '''
+        if rel:
+            value += self.position
         self.__target = self._bounded(value)
         self.__time = time()
 
@@ -107,7 +110,15 @@ class SLMDriver:
         self._min = 0.
         self._max = 255.
 
+        self._channels = 1
+
+        def generate_random_array(height, width):
+            import random
+            return [[float(random.randint(0, 255)) for _ in range(width)] for _ in range(height)]
+
         home = [[0.]*width]*height
+
+        home = generate_random_array(height, width)
 
         self._home = self._bounded(home) 
         self._position = self._bounded(home)
@@ -151,14 +162,17 @@ class SLMDriver:
         return [[ max(self._min, min(v, self._max)) for v in row] for row in values]
 
 
-    def move_at(self, value : list[list[float]]):
+    def move_at(self, value : list[list[float]], rel : bool = False):
         '''
            simulate a move to a postion
         '''
+        if rel:
+            value = [[v + p for v, p in zip(row_value, row_position)] for row_value, row_position in zip(value, self.position)]
+
         self.__target = self._bounded(value)
         self.__time = time()
 
-
+        
 class DetectorDriver:
     '''
 
@@ -181,7 +195,8 @@ class DetectorDriver:
 
     '''
     def __init__(self, dimension : Dimension = 0, x_axis_len : int = 0,
-        y_axis_len : int = 0, acq_time_ms : int = 200, labels : list[str] = []
+        y_axis_len : int = 0, acq_time_ms : int = 200, labels : list[str] = [],
+        channels : int = 1
     ):
         self._acq_time_ms = acq_time_ms
         self._dimension = dimension
@@ -194,6 +209,7 @@ class DetectorDriver:
         self._x_axis_len = x_axis_len
         self._y_axis_len = y_axis_len
         self._labels = labels
+        self._channels = channels
 
     def _acquire_0d(self) -> float:
         return random.uniform(-255,255)
@@ -210,29 +226,16 @@ class DetectorDriver:
     def labels(self):
         return self._labels
     
+    def is_multichannel(self) -> bool:
+        return self._channels > 1
 
     def acquire(self) -> RawDetectorData:
         ''' 
             Simulate acquisition from the detector
         '''
         sleep(self._acq_time_ms/1000)
+        if self.is_multichannel():
+            return [getattr(self, f'_acquire_{self._dimension}d', self._acquire_0d)() for _ in range(self._channels)]
         return getattr(self, f'_acquire_{self._dimension}d', self._acquire_0d)()
 
 
-class RGBCameraDriver(DetectorDriver):
-    '''
-
-        Class to simulate a camera based on a generic detector.
-            - acquire returns a list containing 3 sublists, each one
-              of 2d data, corresponding to red, green, blue pixels
-              components
-    '''
-    def __init__(self, **kwargs):
-        super().__init__(dimension = 2, **kwargs)
-
-    def acquire(self) -> RawDetectorData:
-        ''' 
-            Simulate acquisition from the detector
-        '''
-        sleep(self._acq_time_ms/1000)
-        return [self._acquire_2d() for _ in range(3)]
