@@ -52,6 +52,12 @@ def get_args() -> dict:
     )
 
 
+    parser.add_argument(
+        "-n", "--name",
+        type=str,
+        default="actuator",
+        help="LECO name for the device")
+
 
     args = parser.parse_args()
 
@@ -66,14 +72,17 @@ def get_args() -> dict:
 
 def main():
     args  = get_args()
-    args['axes'] = [
-        Axis.from_data((lambda l : [((math.exp(i / (l - 1)) - 1) / (math.e - 1)) * l for i in range(l)])(args['x_axis_len']), label="the x axis", units="cm"),
-        Axis.from_size(args['y_axis_len'], label="the y axis", units="pixels")
-    ]
-    detector = JSONDetector('detector', **args)
+    args['axes'] = []
+    if 'y_axis_len' in args and args['y_axis_len']:
+        args['axes'].append(Axis.from_size(args['y_axis_len'], label="the y axis", units="pixels"))
+    if 'x_axis_len' in args and args['x_axis_len']:
+        args['axes'].append(Axis.from_data((lambda l : [((math.exp(i / (l - 1)) - 1) / (math.e - 1)) * l for i in range(l)])(args['x_axis_len']), label="the x axis", units="cm"))
+    detector = JSONDetector(**args)
  
     detector.run()
 
 
 if __name__ == "__main__":
     main()
+
+

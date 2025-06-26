@@ -47,6 +47,12 @@ def get_args() -> dict:
         action="store_true"
     )
 
+    parser.add_argument(
+    	"-n", "--name",
+    	type=str,
+    	default="actuator",
+    	help="LECO name for the device")
+
     args = parser.parse_args()
 
     if not hasattr(args, 'bounds') or args.bounds is None:
@@ -62,7 +68,7 @@ def get_args() -> dict:
 
 def main():
     args  = get_args()
-    actuator = JSONActuator('actuator', **args)
+    actuator = JSONActuator(**args)
 
     actuator.run()
 
