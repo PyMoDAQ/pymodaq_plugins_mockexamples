@@ -55,7 +55,7 @@ def get_args() -> dict:
     parser.add_argument(
         "-n", "--name",
         type=str,
-        default="actuator",
+        default="detector",
         help="LECO name for the device")
 
 
