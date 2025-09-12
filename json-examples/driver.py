@@ -234,8 +234,10 @@ class DetectorDriver:
             Simulate acquisition from the detector
         '''
         sleep(self._acq_time_ms/1000)
+        
+        acquisition_function = getattr(self, f'_acquire_{self._dimension}d', self._acquire_0d)
         if self.is_multichannel():
-            return [getattr(self, f'_acquire_{self._dimension}d', self._acquire_0d)() for _ in range(self._channels)]
-        return getattr(self, f'_acquire_{self._dimension}d', self._acquire_0d)()
+            return [acquisition_function() for _ in range(self._channels)]
+        return acquisition_function()
 
 
