@@ -44,6 +44,10 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
             {'title': 'dy', 'name': 'dy', 'type': 'float', 'value': Camera.dy, 'min': 1},
             {'title': 'n', 'name': 'n', 'type': 'int', 'value': Camera.n, 'min': 1},
             {'title': 'amp_noise', 'name': 'amp_noise', 'type': 'float', 'value': Camera.amp_noise, 'min': 0},
+            {'title': 'drift_x', 'name': 'drift_x', 'type': 'float', 'value': Camera.drift_x},
+            {'title': 'drift_y', 'name': 'drift_y', 'type': 'float', 'value': Camera.drift_y},
+            {'title': 'std_x', 'name': 'std_x', 'type': 'float', 'value': Camera.std_x},
+            {'title': 'std_y', 'name': 'std_y', 'type': 'float', 'value': Camera.std_y},
         ]},
 
     ]
