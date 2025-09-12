@@ -46,10 +46,10 @@ class Camera:
         return self._image
 
     def make_Mock_data(self):
-        self.x0 += self.drift_x
-        self.y0 += self.drift_y
-        noise_x = self.x0 + self.std_x*np.random.randn()
-        noise_y = self.y0 + self.std_y*np.random.randn()
+        self.x0 += self.drift_x + self.std_x*np.random.randn()
+        self.y0 += self.drift_y + self.std_y*np.random.randn()
+        noise_x = self.x0
+        noise_y = self.y0
         data_mock = self.amp * (
             mutils.gauss2D(self.x_axis - noise_x, self._current_value['X'], self.dx,
                           self.y_axis - noise_y, self._current_value['Y'], self.dy,
