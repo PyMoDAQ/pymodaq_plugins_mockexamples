@@ -40,19 +40,19 @@ class Camera:
         self.base_Mock_data()
 
     def base_Mock_data(self):
-        self.x_axis = np.linspace(0, self.Nx, self.Nx, endpoint=False)
-        self.y_axis = np.linspace(0, self.Ny, self.Ny, endpoint=False)
+        self.x_axis = np.linspace(0, self.Nx, self.Nx, endpoint=False) - self.Nx//2
+        self.y_axis = np.linspace(0, self.Ny, self.Ny, endpoint=False) - self.Nx//2
         self._image = self.make_Mock_data()
         return self._image
 
     def make_Mock_data(self):
         self.x0 += self.drift_x + self.std_x*np.random.randn()
         self.y0 += self.drift_y + self.std_y*np.random.randn()
-        noise_x = self.x0
-        noise_y = self.y0
+        offset_x = self.x0
+        offset_y = self.y0
         data_mock = self.amp * (
-            mutils.gauss2D(self.x_axis - noise_x, self._current_value['X'], self.dx,
-                          self.y_axis - noise_y, self._current_value['Y'], self.dy,
+            mutils.gauss2D(self.x_axis, self._current_value['X']-offset_x, self.dx,
+                          self.y_axis, self._current_value['Y']-offset_y, self.dy,
                           self.n,
                           angle=self._current_value['Theta']))        
         if self.fringes:
