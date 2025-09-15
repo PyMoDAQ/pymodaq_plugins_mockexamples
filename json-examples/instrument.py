@@ -69,6 +69,7 @@ class JSONDetector:
         # stuff to do when entering/exiting the state:
         #  { new-state : action }
         self.background_state_actions = {
+            LECOState.GRABBING : self._start_grabbing
         }
         self.post_state_actions = {
             LECOState.GRABBING : self._stop_grabbing
@@ -102,7 +103,7 @@ class JSONDetector:
                 RPCMethod.STOP_GRAB       : (LECOState.REMOTE_NAME_SET, self._on_stop_grab),
                 RPCMethod.SEND_DATA_SNAP  : (LECOState.REMOTE_NAME_SET, self._on_snap_data),
                 RPCMethod.SET_REMOTE_NAME : (LECOState.REMOTE_NAME_SET, self._on_set_receiver),
-                RPCMethod.PONG            : (LECOState.REMOTE_NAME_SET, self._on_pong),
+                RPCMethod.PONG            : (LECOState.GRABBING,        self._on_pong),
             }
         }
 
@@ -163,6 +164,8 @@ class JSONDetector:
                 new_state, on_transition_action = self.transitions[self.state][method]
                 print(f"Current State: {self.state}, Received Message: {method.name}, Transitioning to {new_state}")
 
+                new_state_is_different = new_state != self.state
+
                 # if the current state has a post state action defined
                 # it is executed 
                 if self.state in self.post_state_actions:
@@ -219,7 +222,6 @@ class JSONDetector:
 
     def _on_start_grab(self, trame : LECOTrame):
         self._communicator.send(trame.to_response())
-        self._start_grabbing()
 
     def _on_snap_data(self, trame : LECOTrame):
         self._communicator.send(trame.to_response())
