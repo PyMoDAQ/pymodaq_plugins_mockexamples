@@ -38,12 +38,16 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
             {'title': 'Nx', 'name': 'Nx', 'type': 'int', 'value': Camera.Nx, 'min': 1},
             {'title': 'Ny', 'name': 'Ny', 'type': 'int', 'value': Camera.Ny, 'min': 1},
             {'title': 'Amp', 'name': 'amp', 'type': 'int', 'value': Camera.amp, 'min': 1},
-            {'title': 'x0', 'name': 'x0', 'type': 'slide', 'value': Camera.x0, 'min': 0, 'max': 256},
-            {'title': 'y0', 'name': 'y0', 'type': 'float', 'value': Camera.y0, 'min': 0},
             {'title': 'dx', 'name': 'dx', 'type': 'float', 'value': Camera.dx, 'min': 1},
             {'title': 'dy', 'name': 'dy', 'type': 'float', 'value': Camera.dy, 'min': 1},
             {'title': 'n', 'name': 'n', 'type': 'int', 'value': Camera.n, 'min': 1},
             {'title': 'amp_noise', 'name': 'amp_noise', 'type': 'float', 'value': Camera.amp_noise, 'min': 0},
+            {'title': 'Drift', 'name': 'is_drifting', 'type': 'bool', 'value': False, 'children':[
+            {'title': 'drift_x', 'name': 'drift_x', 'type': 'float', 'value': Camera.drift_x},
+            {'title': 'drift_y', 'name': 'drift_y', 'type': 'float', 'value': Camera.drift_y},
+            {'title': 'std_x', 'name': 'std_x', 'type': 'float', 'value': Camera.std_x},
+            {'title': 'std_y', 'name': 'std_y', 'type': 'float', 'value': Camera.std_y},
+            ]},
         ]},
 
     ]
@@ -62,13 +66,15 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
         """
         if param.name() in iter_children(self.settings.child('current_values'), []):
             self.controller.set_value(axis=param.name(), value=param.value())
-
+        if param.name() == 'is_drifting':
+            self.controller.refresh_drift()
         if param.name() in iter_children(self.settings.child('cam_settings'), []):
             if hasattr(self.controller, param.name()):
                 setattr(self.controller, param.name(), param.value())
             self.controller.base_Mock_data()
             self.x_axis = Axis(data=self.controller.x_axis, label='pixel', index=1)
             self.y_axis = Axis(data=self.controller.y_axis, label='pixel', index=0)
+
 
         if param.name() == 'read_only':
             for child in self.settings.child('cam_settings').children():
