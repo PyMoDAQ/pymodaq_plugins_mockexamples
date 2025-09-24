@@ -11,6 +11,8 @@ from pymodaq.utils.data import DataFromPlugins
 
 from pymodaq_plugins_mockexamples.hardware.harmonics import Harmonics
 
+from pymodaq_gui.plotting.utils.plot_utils import RoiInfo
+
 
 class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
     """ Instrument plugin class for a 1D viewer.
@@ -108,6 +110,10 @@ class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
         """Stop the current grab hardware wise if necessary"""
         pass
         return ''
+
+    def roi_select(self, roi_info: RoiInfo, ind_viewer: int = 0):
+        self.roi_select_info = roi_info
+        self.roi_select_viewer_index = ind_viewer
 
 
 if __name__ == '__main__':

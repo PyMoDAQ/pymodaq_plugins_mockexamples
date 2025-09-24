@@ -3,14 +3,14 @@ from qtpy.QtWidgets import QWidget, QApplication
 from typing import List
 
 from pymodaq_gui.parameter import Parameter
-from pymodaq.extensions.bayesian.utils import BayesianModelDefault
+from pymodaq.extensions.optimizers_base.utils import OptimizerModelDefault
 from pymodaq_gui import utils as gutils
 from pymodaq_gui.plotting.data_viewers import Viewer1D, Viewer2D
 from pymodaq.utils.data import DataActuator, DataToActuators, DataRaw
 
 
-class BayesianModelMock(BayesianModelDefault):
-    params = BayesianModelDefault.params + [
+class BayesianModelMock(OptimizerModelDefault):
+    params = OptimizerModelDefault.params + [
         {'title': 'Update data', 'name': 'update_data', 'type': 'bool_push', 'label': 'Update Data'}
     ]
 
@@ -23,14 +23,14 @@ class BayesianModelMock(BayesianModelDefault):
         Initialize whatever is needed by your custom model after the optimization runner is
         initialized
         """
-        if 'Mock Data' not in self.optimisation_controller.dockarea.docks:
+        if 'Mock Data' not in self.optimization_controller.dockarea.docks:
             dock_mock = gutils.Dock('Mock Data')
             dock_widget = QWidget()
             dock_mock.addWidget(dock_widget)
-            self.optimisation_controller.dockarea.addDock(
+            self.optimization_controller.dockarea.addDock(
                 dock_mock, 'bottom',
-                self.optimisation_controller.dockarea.docks[
-                    self.optimisation_controller.explored_viewer_name])
+                self.optimization_controller.dockarea.docks[
+                    self.optimization_controller.explored_viewer_name])
 
 
             controller = self.modules_manager.get_mod_from_name('ComplexData').controller
@@ -98,7 +98,7 @@ class BayesianModelMock(BayesianModelDefault):
                 axis_array = axis_grid[0].get_data()
                 actuators = self.modules_manager.selected_actuators_name
                 dwa_measured, dwa_prediction = (
-                    self.optimisation_controller.algorithm.get_1D_dwa_gp(
+                    self.optimization_controller.algorithm.get_1D_dwa_gp(
                         axis_grid[0].get_data(), actuator_name=actuators[0]))
                 dwa_measured.extra_attributes += ['symbol', 'symbol_size', 'color']
                 dwa_measured.symbol = 'd'
@@ -112,7 +112,7 @@ class BayesianModelMock(BayesianModelDefault):
                                axes=[axis_grid[0].copy()])
                 self.viewer_mock.show_data(mock,
                                            scatter_dwa=dwa_measured)
-            best_indiv_array = self.optimisation_controller.algorithm.best_individual
+            best_indiv_array = self.optimization_controller.algorithm.best_individual
             if isinstance(self.viewer_mock, Viewer2D):
                 best_indiv_array = self.viewer_mock.view.unscale_axis(*best_indiv_array)
             self.viewer_mock.set_crosshair_position(*best_indiv_array)

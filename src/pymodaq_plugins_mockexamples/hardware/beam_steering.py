@@ -20,7 +20,7 @@ class BeamSteeringActuators(ActuatorWrapperWithTauMultiAxes):
     def __init__(self):
         super().__init__()
 
-        self._current_values = [0, 0, 1]
+        self._current_values = [0, 0, 20]
 
 
 class Camera:
@@ -33,7 +33,7 @@ class Camera:
     _dy = 10
     _n = 1
     _angle = 0
-    amp_noise = 4
+    amp_noise = 1
     fringes = False
 
     def __init__(self):
@@ -94,10 +94,16 @@ class Camera:
         return self._image
 
     def get_data(self, xpos, ypos) -> np.ndarray:
-        return np.roll(np.roll(self._image + self.amp_noise * np.random.rand(len(self.y_axis),
-                                                                             len(self.x_axis)),
-                               int(xpos), axis=1),
-                       int(ypos), axis=0)
+        image = self.amp * (
+            mutils.gauss2D(self.x_axis, self.x0 - xpos, self.dx,
+                           self.y_axis, self.y0 - ypos, self.dy,
+                           self.n,
+                           self.angle))
+        # return np.roll(np.roll(self._image + self.amp_noise * np.random.rand(len(self.y_axis),
+        #                                                                      len(self.x_axis)),
+        #                        int(xpos), axis=1),
+        #                int(ypos), axis=0)
+        return image
 
 
 class BeamSteering:

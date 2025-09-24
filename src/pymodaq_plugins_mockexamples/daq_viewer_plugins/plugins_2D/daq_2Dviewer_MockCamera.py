@@ -172,7 +172,7 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
         for ind in range(self.settings['Nimagespannel']):
             datatmptmp = []
             for indbis in range(self.settings['Nimagescolor']):
-                datatmptmp.append(data_tmp)
+                datatmptmp.append((indbis+1) * data_tmp)
             if self._update_axes:
                 data.append(DataFromPlugins(name='Mock2D_{:d}'.format(ind), data=datatmptmp, dim='Data2D',
                                             axes=[self.x_axis, self.y_axis]))
