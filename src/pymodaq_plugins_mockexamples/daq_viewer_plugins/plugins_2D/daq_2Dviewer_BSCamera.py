@@ -21,6 +21,8 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
         {'title': 'Beam Size Y', 'name': 'size_y', 'type': 'float', 'value': 20, 'min': 10},
         {'title': 'Beam Angle (deg)', 'name': 'angle', 'type': 'float', 'value': 0,},
         {'title': 'Gaussian-ness', 'name': 'index_n', 'type': 'int', 'value': 1, },
+        {'title': 'Power noise', 'name': 'power_noise', 'type': 'float', 'value': 10.,
+         'tip': 'The lower the value, the higher the noise'},
 
     ]
 
@@ -39,6 +41,8 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
             self.controller.camera.angle = param.value()
         elif param.name() == 'index_n':
             self.controller.camera.n = param.value()
+        elif param.name() == 'power_noise':
+            self.controller.power_noise_fraction = param.value()
 
     def ini_detector(self, controller=None):
         self.ini_detector_init(controller, BeamSteering())

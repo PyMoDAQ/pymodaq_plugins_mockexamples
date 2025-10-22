@@ -4,11 +4,16 @@ Created the 24/10/2022
 
 @author: Sebastien Weber
 """
+from threading import Lock
 import numpy as np
 import pymodaq_utils.math_utils as mutils
 
 from pymodaq_plugins_mockexamples.hardware.camera_wrapper import Camera
 from pymodaq_plugins_mock.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
+
+from pymodaq_utils.math_utils import gauss1D
+
+lock = Lock()
 
 
 class BeamSteeringActuators(ActuatorWrapperWithTauMultiAxes):
@@ -19,8 +24,11 @@ class BeamSteeringActuators(ActuatorWrapperWithTauMultiAxes):
 
     def __init__(self):
         super().__init__()
-
         self._current_values = [0, 0, 20]
+
+    def move_at(self, value: float, axis: str):
+
+        super().move_at(value, axis)
 
 
 class Camera:
@@ -106,14 +114,19 @@ class Camera:
         return image
 
 
+
 class BeamSteering:
     _tau = BeamSteeringActuators._tau
 
-    def __init__(self):
+    def __init__(self, power_noise_fraction = 10):
 
         self.actuators = BeamSteeringActuators()
         self.camera = Camera()
         self.camera.fringes = False
+        self.power_max = 100.
+        self.power_noise_fraction = power_noise_fraction
+        self._called_first = True
+        self._noise = 1.
 
     @property
     def tau(self):
@@ -155,17 +168,33 @@ class BeamSteering:
         return self.actuators.get_value(axis)
 
     def get_camera_data(self) -> np.ndarray:
-        return self.camera.get_data(self.actuators.get_value('X'),
-                                    self.actuators.get_value('Y')) * self.actuators.get_value('Power')
+        lock.acquire_lock()
+        if self._called_first:
+            self._noise = self.power_law(self.actuators.get_value('Power'))
+            self._called_first = False
+        else:
+            self._called_first = True
+        lock.release_lock()
+        return (self.camera.get_data(self.actuators.get_value('X'),
+                                    self.actuators.get_value('Y'))
+                * self._noise)
+
 
     def get_photodiode_data(self) -> float:
-        
-        idx = int(Camera.Nx / 2)
-        idy = int(Camera.Ny / 2)
-        width = 20
-        
-        return np.mean(
+        """ Get integrated signal from the laser"""
+        lock.acquire_lock()
+        if self._called_first:
+            self._noise = self.power_law(self.actuators.get_value('Power'))
+            self._called_first = False
+        else:
+            self._called_first = True
+        lock.release_lock()
+        return (np.mean(
             self.camera.get_data(self.actuators.get_value('X'),
-                                    self.actuators.get_value('Y'))[
-               int(idy-width/2): int(idy+width/2),
-               int(idx-width/2): int(idx+width/2)]) * self.actuators.get_value('Power')
+                                 self.actuators.get_value('Y')))
+                * self._noise)
+
+    def power_law(self, power_in: float) -> float:
+        power_out = self.power_max * gauss1D(power_in, self.power_max, self.power_max/3)
+        power_out += power_out / self.power_noise_fraction * np.random.random()
+        return power_out

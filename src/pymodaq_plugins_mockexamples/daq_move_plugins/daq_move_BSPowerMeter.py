@@ -15,7 +15,7 @@ class DAQ_Move_BSPowerMeter(DAQ_Move_base):
     _controller_units = 'W'
     is_multiaxes = True
     stage_names = [BeamSteeringActuators.axes[-1]]
-    _epsilon = 0.01
+    _epsilon = 0.5
 
     params = [
             {'title': 'Tau (ms):', 'name': 'tau', 'type': 'int',
