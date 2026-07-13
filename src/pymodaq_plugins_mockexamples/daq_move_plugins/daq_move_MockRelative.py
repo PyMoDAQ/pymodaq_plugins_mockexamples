@@ -5,10 +5,8 @@ from pymodaq.control_modules.daq_move_ui.utils import UiType
 from pymodaq_plugins_mockexamples import config
 
 
-class DAQ_Move_MockBinary(DAQ_Move_base):
-    """ A very simple actuator plugin setting/getting the value one has set into it
-
-    The value could only be 0 or 1
+class DAQ_Move_MockRelative(DAQ_Move_base):
+    """ An actuator with no referencing and absolute values
 
     """
     _controller_units = ''
@@ -17,24 +15,16 @@ class DAQ_Move_MockBinary(DAQ_Move_base):
     axes_names = ['']
     _epsilon = 0.01
     params = comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+
     data_actuator_type = DataActuatorType.DataActuator
-    ui_type = UiType.BINARY
+    ui_type = UiType.RELATIVE
+    has_encoder = False
 
     def ini_attributes(self):
-        self._internal_state = 0
+        self._internal_value = 0.
 
-    @property
-    def internal_state(self):
-        return self._internal_state
-
-    @internal_state.setter
-    def internal_state(self, value: int):
-        self._internal_state = int(value)
-
-    def get_actuator_value(self):
-        pos = DataActuator(data=self.internal_state)
-        pos = self.get_position_with_scaling(pos)
-        return pos
+    def get_actuator_value(self) -> DataActuator:
+        raise NotImplementedError
 
     def close(self):
         """
@@ -63,28 +53,27 @@ class DAQ_Move_MockBinary(DAQ_Move_base):
         initialized = True
         return info, initialized
 
-    def move_abs(self, position: DataActuator):
+    def move_abs(self, value: DataActuator):
         """ Move the actuator to the absolute target defined by position
 
         Parameters
         ----------
-        position: (float) value of the absolute target positioning
+        value: (DataActuator) value of the absolute target positioning
         """
 
-        position = self.check_bound(position)  #if user checked bounds, the defined bounds are applied here
-        self.target_value = position
-        position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
+        raise NotImplementedError
 
-        self.internal_state = position.value()
-
-    def move_rel(self, position):
+    def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
         ----------
-        position: (flaot) value of the relative target positioning
+        value: (DataActuator) value of the relative target positioning
         """
-        pass
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
+        value = self.set_position_relative_with_scaling(value)
+        self._internal_value += value.value(self.axis_unit)
 
     def move_home(self):
         """

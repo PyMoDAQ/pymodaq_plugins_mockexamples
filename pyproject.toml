@@ -12,8 +12,8 @@ package-url = 'https://github.com/PyMoDAQ/pymodaq_plugins_mockexamples'
 name = "pymodaq_plugins_mockexamples"
 description = 'Set of advanced Mock examples to test PyMoDAQ functionnalities'
 dependencies = [
-    "pymodaq>=5.0.0",
-    "pymodaq_data>=5.0.9"
+    "pymodaq>=5.3.0",
+    "pymodaq_data>=5.2.5"
 ]
 
 authors = [
@@ -30,7 +30,7 @@ maintainers = [
 dynamic = ["version", "urls", "entry-points"]
 readme = "README.rst"
 license = { file="LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",

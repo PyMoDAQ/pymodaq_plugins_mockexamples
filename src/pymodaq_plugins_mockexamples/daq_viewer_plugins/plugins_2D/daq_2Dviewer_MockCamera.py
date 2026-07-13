@@ -59,7 +59,6 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
         self.y_axis = None
         self.live = False
         self.ind_commit = 0
-        self._update_axes = True
 
     def commit_settings(self, param: Parameter):
         """
@@ -81,7 +80,11 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
                 child.setOpts(readonly=param.value())
 
     def ini_detector(self, controller=None):
-        self.ini_detector_init(controller, Camera())
+        if self.is_master:
+            self.controller = Camera()
+        else:
+            self.controller = controller
+
         self.emit_status(ThreadCommand('update_main_settings',
                                        [['wait_time'], self.settings['wait_time'], 'value']))
 
@@ -173,13 +176,8 @@ class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
             datatmptmp = []
             for indbis in range(self.settings['Nimagescolor']):
                 datatmptmp.append((indbis+1) * data_tmp)
-            if self._update_axes:
-                data.append(DataFromPlugins(name='Mock2D_{:d}'.format(ind), data=datatmptmp, dim='Data2D',
+            data.append(DataFromPlugins(name='Mock2D_{:d}'.format(ind), data=datatmptmp, dim='Data2D',
                                             axes=[self.x_axis, self.y_axis]))
-            else:
-                data.append(DataFromPlugins(name='Mock2D_{:d}'.format(ind), data=datatmptmp, dim='Data2D'))
-        if self._update_axes:
-            self._update_axes = False
         return DataToExport('MockCamera', data=data)
 
     def stop(self):

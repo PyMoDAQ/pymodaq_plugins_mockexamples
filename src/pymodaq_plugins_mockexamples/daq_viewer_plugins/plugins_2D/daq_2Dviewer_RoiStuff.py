@@ -3,25 +3,38 @@ from typing import Iterable
 from qtpy.QtCore import QThread, Slot, QRectF
 from qtpy import QtWidgets
 import numpy as np
-from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, main, comon_parameters
+from pymodaq.control_modules.viewer_utility_classes import main
 
-from pymodaq_gui.plotting.utils.plot_utils import RoiInfo
-from pymodaq_data.data import DataToExport, DataWithAxes
+from pymodaq_gui.plotting.items.roi import RoiInfo
+from pymodaq_data.data import DataToExport, DataWithAxes, Axis
 from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_2D.daq_2Dviewer_MockCamera import DAQ_2DViewer_MockCamera
 
 
 class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
 
     params = DAQ_2DViewer_MockCamera.params + \
-             [{'title': 'USe Roi:', 'name': 'use_roi', 'type': 'bool'}]
+             [{'title': 'Use Roi:', 'name': 'use_roi', 'type': 'bool'}]
 
     def ini_attributes(self):
         super().ini_attributes()
         self.roi_select_info: RoiInfo = None
         self.roi_select_viewer_index: int = None
 
+    def ini_detector(self, controller=None):
+        info, initialized = super().ini_detector(controller)
+
+
+
+        self.x_axis = Axis(size=self.controller.Nx, offset=23,
+                           scaling=0.5, label='scaled X', index=1)
+        self.y_axis = Axis(size=self.controller.Ny,
+                           offset=-16,
+                           scaling=2., label='scaled Y', index=0)
+
+        return info, initialized
+
     def ROISelect(self, info: QRectF):
-        raise DeprecationWarning('DO not use it anymore, use the roi_select method')
+        raise DeprecationWarning('Do not use it anymore, use the roi_select method')
 
     def roi_select(self, roi_info: RoiInfo, ind_viewer: int = 0):
         self.roi_select_info = roi_info
@@ -53,9 +66,10 @@ class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
                 QThread.msleep(kwargs.get('wait_time', 100))
                 if self.settings['use_roi']:
                     dte = DataToExport('cropped')
-                    # for dwa in data:
-                    #     # dwa.
-                    #     dte.append(dwa.isig[])
+                    for dwa in data.data:
+                        dwa_sliced = dwa.vsig[self.roi_select_info.to_slices(False)]
+                        dwa.add_extra_attribute(sliced=True)
+                        dte.data.append(dwa_sliced)
                 self.dte_signal.emit(data)
                 QtWidgets.QApplication.processEvents()
         else:
@@ -70,7 +84,9 @@ class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
             self.roi_select_info.center_origin()
             dte = DataToExport('cropped')
             for dwa in data.data:
-                dte.data.append(dwa.isig[self.roi_select_info.to_slices()])
+                dwa_sliced = dwa.vsig[self.roi_select_info.to_slices(False)]
+                dwa.add_extra_attribute(sliced=True)
+                dte.data.append(dwa_sliced)
         else:
             dte = data
         self.dte_signal.emit(dte)
