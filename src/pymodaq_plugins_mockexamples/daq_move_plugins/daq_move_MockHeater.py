@@ -3,10 +3,10 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
 from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataActuator
 
-from pymodaq_plugins_mockexamples.hardware.boiler import BoilerController
+from pymodaq_plugins_mockexamples.hardware.heater import HeaterController
 
 
-class DAQ_Move_Boiler(DAQ_Move_base):
+class DAQ_Move_MockHeater(DAQ_Move_base):
     """
         Wrapper object to access the Mock fonctionnalities, similar wrapper for all controllers.
 
@@ -24,7 +24,7 @@ class DAQ_Move_Boiler(DAQ_Move_base):
     data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
-        self.controller: BoilerController = None
+        self.controller: HeaterController = None
 
 
     def get_actuator_value(self) -> DataActuator:
@@ -38,12 +38,12 @@ class DAQ_Move_Boiler(DAQ_Move_base):
     def commit_settings(self, param):
         pass
 
-    def ini_stage(self, controller: BoilerController = None):
+    def ini_stage(self, controller: HeaterController = None):
         """
 
         """
         if self.is_master:
-            self.controller = BoilerController()  # any object that will control the stages
+            self.controller = HeaterController()  # any object that will control the stages
         else:
             self.controller = controller
 

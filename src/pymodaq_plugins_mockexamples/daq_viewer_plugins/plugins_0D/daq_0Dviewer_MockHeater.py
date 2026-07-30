@@ -6,22 +6,22 @@ from pymodaq.utils.data import DataFromPlugins
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, comon_parameters, main
 from pymodaq_data import DataToExport
 
-from pymodaq_plugins_mockexamples.hardware.boiler import BoilerController
+from pymodaq_plugins_mockexamples.hardware.heater import HeaterController
 
 
 
-class DAQ_0DViewer_Boiler(DAQ_Viewer_base):
+class DAQ_0DViewer_MockHeater(DAQ_Viewer_base):
     """
     """
     params = comon_parameters + [
-        {'title:': 'Noise', 'name': 'noise', 'type': 'float', 'value': BoilerController._noise},
+        {'title:': 'Noise', 'name': 'noise', 'type': 'float', 'value': HeaterController._noise},
         {'title:': 'Ambiant temp', 'name': 'ambiant_temp', 'type': 'float',
-         'value': BoilerController._ambiant_temperature}
+         'value': HeaterController._ambiant_temperature}
               ]
 
 
     def ini_attributes(self):
-        self.controller: BoilerController = None
+        self.controller: HeaterController = None
         self.ind_data = 0
 
     def commit_settings(self, param):
@@ -37,7 +37,7 @@ class DAQ_0DViewer_Boiler(DAQ_Viewer_base):
         """
         """
         if self.is_master:
-            self.controller = BoilerController()
+            self.controller = HeaterController()
         else:
             self.controller = controller
 
@@ -57,8 +57,8 @@ class DAQ_0DViewer_Boiler(DAQ_Viewer_base):
 
         """
         temperature = self.controller.grab()
-        self.dte_signal.emit(DataToExport('Boiler', data=[
-            DataFromPlugins(name='Boiler', data=[np.array([temperature])],
+        self.dte_signal.emit(DataToExport(self._title, data=[
+            DataFromPlugins(name=self._title, data=[np.array([temperature])],
                             dim='Data0D', labels=['Temperature'])]))
 
     def stop(self):

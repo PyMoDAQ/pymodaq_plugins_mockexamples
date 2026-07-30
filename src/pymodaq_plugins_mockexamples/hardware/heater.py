@@ -5,7 +5,7 @@ import numpy as np
 from pymodaq import Q_
 
 
-class BoilerController(QObject):
+class HeaterController(QObject):
     _current_temperature = 20.
     _ambiant_temperature = 19.
     _noise = 0.1
