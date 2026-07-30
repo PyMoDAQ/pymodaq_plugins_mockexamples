@@ -42,6 +42,7 @@ Actuators
   this actuator can be moved in the [0-20] range (even randomly) to retrieve a noisy gaussian
 * **MockTauMulti**: controller with multiple axes and showing how to add a characteristic time (to mimic real
   instruments)
+* **MockHeater**: actuator simulating the heating of something (in Watt). To be used with the mockHeater 0D detector
 
 Viewer0D
 ++++++++
@@ -50,6 +51,7 @@ Viewer0D
 * **MockRandom**: generate a value of a noisy gaussian given the current value of the underlying mock controller.
   To be used with the MockRandom actuator. If they share the same ID in the preset then this actuator can be moved in
   the [0-20] range (even randomly) to retrieve a noisy gaussian
+* **MockHeater**: detector simulating the temperature measurement of something. To be used with the mockHeater actuator
 
 Viewer1D
 ++++++++
@@ -89,5 +91,5 @@ Extensions
 Installation instructions
 =========================
 
-* PyMoDAQ >= 4 (except for some of them, specified in this README)
+* PyMoDAQ >= 5 (except for some of them, specified in this README)
 * nothing in particular to be installed, they are all virtual instruments
