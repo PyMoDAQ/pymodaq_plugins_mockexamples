@@ -40,26 +40,7 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
 
     def ini_stage(self, controller=None):
         """
-            Initialize the controller and stages (axes) with given parameters.
 
-            ============== ================================================ ==========================================================================================
-            **Parameters**  **Type**                                         **Description**
-
-            *controller*    instance of the specific controller object       If defined this hardware will use it and will not initialize its own controller instance
-            ============== ================================================ ==========================================================================================
-
-            Returns
-            -------
-            Easydict
-                dictionnary containing keys:
-                 * *info* : string displaying various info
-                 * *controller*: instance of the controller object in order to control other axes without the need to init the same controller twice
-                 * *stage*: instance of the stage (axis or whatever) object
-                 * *initialized*: boolean indicating if initialization has been done corretly
-
-            See Also
-            --------
-             daq_utils.ThreadCommand
         """
         self.ini_stage_init(controller, BeamSteering())
         self.controller.tau = self.settings['tau'] / 1000

@@ -74,7 +74,7 @@ class PIDModelBeamSteering(PIDModelGeneric):
             ],
         )
 
-    def convert_output(self, outputs: List[float], dt, stab=True) -> DataToActuators:
+    def convert_output(self, outputs: List[float], dt: float, stab=True) -> DataToActuators:
         """
         Convert the output of the PID in units to be fed into the actuator
         Parameters
