@@ -10,19 +10,21 @@ from simple_pid import PID
 
 
 class TempController(QObject):
-    _current_temperature = 20.
-    _ambiant_temperature = 19.
-    _noise = 0.1
+    has_cooling = False
 
     def __init__(self, kp=0.1, ki=0., kd=0.):
         super().__init__()
         self._current_power = 0.
         self._ellapsed_time = 0.0
         self._last_output = 0.
+        self._current_temperature = 20.
+        self._ambiant_temperature = 19.
+
+        self._noise = 0.1
 
         self.pid_timer = QTimer()
         self.pid_timer.timeout.connect(self.update_temperature)
-        self.pid_timer.setInterval(10)
+        self.pid_timer.setInterval(50)
 
         self.pid = PID(kp, ki, kd, setpoint=self._ambiant_temperature)
 
@@ -65,7 +67,10 @@ class TempController(QObject):
         #not below ambiant
         self._current_temperature = np.clip(self._current_temperature, self.ambiant_temp, None)
 
-        self._current_power = self.pid(self._current_temperature)
+        if self.has_cooling:
+            self._current_power = self.pid(self._current_temperature)
+        else:
+            self._current_power = np.clip(self.pid(self._current_temperature), 0., None)
 
 
     @property
