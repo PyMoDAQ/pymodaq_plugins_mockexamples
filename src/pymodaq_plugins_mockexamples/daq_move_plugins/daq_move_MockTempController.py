@@ -52,6 +52,8 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
             self.controller.pause(param.value())
         elif param.name() == 'has_cooling':
             self.controller.has_cooling = param.value()
+        elif param.name() == 'reset':
+            self.controller.reset()
 
     def ini_stage(self, controller: TempController = None):
         """
