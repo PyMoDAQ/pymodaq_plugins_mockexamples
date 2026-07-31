@@ -209,7 +209,7 @@ class JSONDetector:
 
     # === transition actions ===
     def _on_signin(self, trame : LECOTrame):
-        self._communicator.set_fullname(f'{trame.sender.split('.')[0]}.{self._name}')
+        self._communicator.set_fullname(f"{trame.sender.split('.')[0]}.{self._name}")
         #self._communicator.send(trame.to_response())
 
     def _on_signout(self, trame : LECOTrame):
