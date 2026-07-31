@@ -16,10 +16,9 @@ class TempController(QObject):
         super().__init__()
         self._current_power = 0.
         self._ellapsed_time = 0.0
-        self._last_output = 0.
-        self._current_temperature = 20.
-        self._ambiant_temperature = 19.
-
+        self._current_temperature = 299.
+        self._ambiant_temperature = 299.
+        self._instantaneous_temperature = self._current_temperature
         self._noise = 0.1
 
         self.pid_timer = QTimer()
@@ -31,7 +30,7 @@ class TempController(QObject):
         self.pid_timer.start()
 
     def pause(self, do_pause=True):
-        self.pid.set_auto_mode(do_pause, last_output=self._last_output)
+        self.pid.set_auto_mode(do_pause, last_output=self._current_power)
 
     @property
     def kp(self):
@@ -62,6 +61,8 @@ class TempController(QObject):
         self._ellapsed_time  = perf_counter()
 
         self._current_temperature += 1 * self._current_power * dt + self._noise * (random() - 0.5)
+        self._instantaneous_temperature = self._current_temperature
+
         # some heat dissipation
         self._current_temperature -= 0.2 * dt
         #not below ambiant
@@ -72,10 +73,9 @@ class TempController(QObject):
         else:
             self._current_power = np.clip(self.pid(self._current_temperature), 0., None)
 
-
     @property
     def temperature(self):
-        return self._current_temperature
+        return self._instantaneous_temperature
 
     @temperature.setter
     def temperature(self, value: float):
@@ -100,3 +100,6 @@ class TempController(QObject):
     @noise.setter
     def noise(self, noise):
         self._noise = noise
+
+    def reset(self):
+        self.pid.reset()
