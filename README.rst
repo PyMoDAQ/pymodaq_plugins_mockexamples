@@ -35,13 +35,23 @@ Below is the list of instruments included in this plugin
 Actuators
 +++++++++
 
-* **MockCamera**: set of X, Y or theta actuators moving a light image on the corresponding camera instrument
-  For this to work, MockCamera actuators and detector should share the same control ID with the preset scan
+* **MockCamera**: set of X, Y or theta actuators moving a light image on the corresponding camera instrument. To
+  be used with the 2D detector **MockCamera**.  An experiment file called **beam_steering.xml** is available in the
+  resources folder to be copied in the .pymodaq/experiments folder to orchestrate such a simulated beam steering
+  experiment.
 * **MockNamedAxes**: Show examples of multi axis actuator controller specifying both a name and an integer ID
 * **MockRandom** actuator to be used with the corresponding 0D detector. If they share the same ID in the preset then
   this actuator can be moved in the [0-20] range (even randomly) to retrieve a noisy gaussian
 * **MockTauMulti**: controller with multiple axes and showing how to add a characteristic time (to mimic real
   instruments)
+* **MockHeater**: actuator simulating the heating of something (in Watt). To be used with the mockHeater 0D detector.
+  An experiment file called **Heater.xml** is available in the resources folder to
+  be copied in the .pymodaq/experiments folder to orchestrate such a simulated experiment. Can be used to test the
+  PID extension.
+* **MockTempController** simulation of a temperature controller with inner PID stabilization loop possibilities or
+  manual power control. Has two axes: *Temperature* for the PID setpoint (if PID enabled) and *Power* for manual power
+  controller if PID disabled. An experiment file called **TempController.xml** is available in the resources folder to
+  be copied in the .pymodaq/experiments folder to orchestrate such a simulated experiment.
 
 Viewer0D
 ++++++++
@@ -50,6 +60,9 @@ Viewer0D
 * **MockRandom**: generate a value of a noisy gaussian given the current value of the underlying mock controller.
   To be used with the MockRandom actuator. If they share the same ID in the preset then this actuator can be moved in
   the [0-20] range (even randomly) to retrieve a noisy gaussian
+* **MockHeater**: detector simulating the temperature measurement of something. To be used with the mockHeater actuator
+* **MockTempController** simulation of a temperature controller (should be slave of the MockTempController master
+  actuator). Probe both the instantaneous temperature and the current applied power
 
 Viewer1D
 ++++++++
@@ -89,5 +102,5 @@ Extensions
 Installation instructions
 =========================
 
-* PyMoDAQ >= 4 (except for some of them, specified in this README)
+* PyMoDAQ >= 5 (except for some of them, specified in this README)
 * nothing in particular to be installed, they are all virtual instruments
