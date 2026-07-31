@@ -15,21 +15,21 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
     """
 
     """
-    _controller_units = 'K'
+    _controller_units = ['K', 'W']
     is_multiaxes = True
-    stage_names = ['Temperature']
-    _epsilon = 0.01
+    stage_names = ['Temperature', 'Power']
+    _epsilon = [0.01, 0.01]
 
     params = [
-        {'title': 'PID Constants', 'name': 'constants', 'type': 'group', 'children': [
-            {'title': 'Kp', 'name': 'kp', 'type': 'float',
-             'value': config('temp_controller', 'kp')},
-            {'title': 'Ki', 'name': 'ki', 'type': 'float', 'value': config('temp_controller', 'ki')},
-            {'title': 'Kd', 'name': 'kd', 'type': 'float', 'value': config('temp_controller', 'kd')},
-        ]},
-         {'title': 'HasCooling:', 'name': 'has_cooling', 'type': 'led', 'value': TempController.has_cooling},
-        {'title': 'Pause:', 'name': 'pause', 'type': 'led', 'value': False},
-         {'title': 'Reset', 'name': 'reset', 'type': 'bool_push', 'value': False, 'label': 'Reset'},
+                 {'title': 'PID Constants', 'name': 'constants', 'type': 'group', 'children': [
+                     {'title': 'Kp', 'name': 'kp', 'type': 'float',
+                      'value': config('temp_controller', 'kp')},
+                     {'title': 'Ki', 'name': 'ki', 'type': 'float', 'value': config('temp_controller', 'ki')},
+                     {'title': 'Kd', 'name': 'kd', 'type': 'float', 'value': config('temp_controller', 'kd')},
+                 ]},
+                 {'title': 'HasCooling:', 'name': 'has_cooling', 'type': 'led', 'value': TempController.has_cooling},
+                 {'title': 'Enabled:', 'name': 'enabled', 'type': 'led', 'value': False},
+                 {'title': 'Reset', 'name': 'reset', 'type': 'bool_push', 'value': False, 'label': 'Reset'},
              ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
     data_actuator_type = DataActuatorType.DataActuator
 
@@ -41,15 +41,18 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
         """
 
         """
-        pos = DataActuator(self._title, data=self.controller.temperature)
+        if self.axis_name == "Temperature":
+            pos = DataActuator(self._title, data=self.controller.temperature, units=self.axis_unit)
+        else:
+            pos = DataActuator(self._title, data=self.controller.power.m_as(self.axis_unit), units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
     def commit_settings(self, param):
         if param.name() in ('kp', 'ki', 'kd'):
             setattr(self.controller, param.name(), param.value())
-        elif param.name() == 'pause':
-            self.controller.pause(param.value())
+        elif param.name() == 'enabled':
+            self.controller.enable(param.value())
         elif param.name() == 'has_cooling':
             self.controller.has_cooling = param.value()
         elif param.name() == 'reset':
@@ -73,7 +76,7 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
 
         return info, initialized
 
-    def move_abs(self, position: DataActuator):
+    def move_abs(self, value: DataActuator):
         """
             Make the absolute move from the given position after thread command signal was received in DAQ_Move_main.
 
@@ -88,19 +91,27 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
             DAQ_Move_base.set_position_with_scaling, DAQ_Move_base.poll_moving
 
         """
-        position = self.check_bound(position)
-        self.target_value = position
-        self.controller.temperature = self.target_value.value(self.axis_unit)
-
-    def move_rel(self, position: DataActuator):
+        value = self.check_bound(value)
+        self.target_value = value
+        if self.axis_name == "Temperature":
+            self.controller.target_temperature = self.target_value.value(self.axis_unit)
+        else:
+            self.controller.power = self.target_value.value(self.axis_unit)
+    def move_rel(self, value: DataActuator):
         """
 
         """
-        position = self.check_bound(self.current_value + position) - self.current_value
-        self.target_value = position + self.current_value
-        position = self.set_position_with_scaling(self.target_value)
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
+        value = self.set_position_with_scaling(self.target_value)
+        if self.axis_name == "Temperature":
+            self.controller.target_temperature = self.target_value.value(self.axis_unit)
+        else:
+            self.controller.power = self.target_value.value(self.axis_unit)
 
-        self.controller.temperature = self.target_value.value(self.axis_unit)
+    def close(self) -> None:
+        if self.is_master:
+            self.controller.close()
 
     def stop_motion(self):
         """
