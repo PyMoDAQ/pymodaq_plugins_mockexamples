@@ -42,7 +42,11 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
         """
 
         """
-        self.ini_stage_init(controller, BeamSteering())
+        if self.is_master:
+            self.controller = BeamSteering()
+        else:
+            self.controller = controller
+
         self.controller.tau = self.settings['tau'] / 1000
 
         info = ""

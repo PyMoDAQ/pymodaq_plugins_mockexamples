@@ -17,7 +17,7 @@ class DAQ_Move_MockRelative(DAQ_Move_base):
     params = comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
 
     data_actuator_type = DataActuatorType.DataActuator
-    ui_type = UiType.RELATIVE
+    ui_type = UiType.RELATIVE #for pymodaq >= 5.3.0
     has_encoder = False
 
     def ini_attributes(self):
