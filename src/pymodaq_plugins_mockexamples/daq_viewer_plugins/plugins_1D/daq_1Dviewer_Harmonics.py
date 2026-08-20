@@ -11,7 +11,7 @@ from pymodaq.utils.data import DataFromPlugins
 
 from pymodaq_plugins_mockexamples.hardware.harmonics import Harmonics
 
-from pymodaq_gui.plotting.utils.plot_utils import RoiInfo
+from pymodaq_gui.plotting.items.roi import RoiInfo
 
 
 class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
