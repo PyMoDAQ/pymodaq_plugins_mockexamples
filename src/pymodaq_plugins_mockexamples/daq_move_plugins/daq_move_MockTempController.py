@@ -6,9 +6,8 @@ from pymodaq.utils.daq_utils import ThreadCommand
 from pymodaq.utils.data import DataActuator
 
 from pymodaq_plugins_mockexamples.hardware.temperature_controller import TempController
-from pymodaq_plugins_mockexamples import Config
 
-config = Config()
+config = GlobalConfig()
 
 
 class DAQ_Move_MockTempController(DAQ_Move_base):
@@ -23,9 +22,9 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
     params = [
                  {'title': 'PID Constants', 'name': 'constants', 'type': 'group', 'children': [
                      {'title': 'Kp', 'name': 'kp', 'type': 'float',
-                      'value': config('temp_controller', 'kp')},
-                     {'title': 'Ki', 'name': 'ki', 'type': 'float', 'value': config('temp_controller', 'ki')},
-                     {'title': 'Kd', 'name': 'kd', 'type': 'float', 'value': config('temp_controller', 'kd')},
+                      'value': config('mockexamples', 'temp_controller', 'kp')},
+                     {'title': 'Ki', 'name': 'ki', 'type': 'float', 'value': config('mockexamples', 'temp_controller', 'ki')},
+                     {'title': 'Kd', 'name': 'kd', 'type': 'float', 'value': config('mockexamples', 'temp_controller', 'kd')},
                  ]},
                  {'title': 'HasCooling:', 'name': 'has_cooling', 'type': 'led', 'value': TempController.has_cooling},
                  {'title': 'Enabled:', 'name': 'enabled', 'type': 'led', 'value': False},

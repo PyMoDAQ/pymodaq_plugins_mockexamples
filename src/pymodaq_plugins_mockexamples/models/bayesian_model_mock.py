@@ -3,7 +3,7 @@ from qtpy.QtWidgets import QWidget, QApplication
 from typing import List
 
 from pymodaq_gui.parameter import Parameter
-from pymodaq.extensions.optimizers_base.utils import OptimizerModelDefault
+from pymodaq.extensions.optimizers_base.models import OptimizerModelDefault
 from pymodaq_gui import utils as gutils
 from pymodaq_gui.plotting.data_viewers import Viewer1D, Viewer2D
 from pymodaq.utils.data import DataActuator, DataToActuators, DataRaw
