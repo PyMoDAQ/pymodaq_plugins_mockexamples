@@ -18,7 +18,7 @@ class DAQ_Move_MockBinary(DAQ_Move_base):
     _epsilon = 0.01
     params = comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
     data_actuator_type = DataActuatorType.DataActuator
-    ui_type = UiType.BINARY
+    ui_type = UiType.BINARY #for pymodaq >= 5.3.0
 
     def ini_attributes(self):
         self._internal_state = 0
