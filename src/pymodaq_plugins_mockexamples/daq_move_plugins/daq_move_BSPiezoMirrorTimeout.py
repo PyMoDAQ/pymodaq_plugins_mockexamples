@@ -19,7 +19,10 @@ class DAQ_Move_BSPiezoMirrorTimeout(DAQ_Move_BSPiezoMirror):
         """
 
         """
-        self.ini_stage_init(controller, BeamSteering())
+        if self.is_master:
+            self.controller = BeamSteering()
+        else:
+            self.controller = controller
         self.controller.tau = self.settings['tau'] / 1000
         QtCore.QThread.msleep(2 * config('pymodaq', 'control_modules', 'control_module_ini_polling') * 1000)  # simulating a very long initialization
 
