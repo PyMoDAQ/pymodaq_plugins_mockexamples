@@ -5,7 +5,7 @@ from pymodaq_data.data import DataToExport, DataRaw, Axis
 import numpy as np
 from PIL import Image
 from pathlib import Path
-from pymodaq_plugins_mockexamples.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
+from pymodaq_plugins_mock.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
 
 here = Path(__file__).parent
 # %%
