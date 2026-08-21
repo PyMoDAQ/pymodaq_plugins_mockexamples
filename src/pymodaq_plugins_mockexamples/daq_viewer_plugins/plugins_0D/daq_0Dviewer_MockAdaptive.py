@@ -137,15 +137,10 @@ class DAQ_0DViewer_MockAdaptive(DAQ_Viewer_base):
             --------
             set_Mock_data
         """
-
-        self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
-        if self.settings.child(('controller_status')).value() == "Slave":
-            if controller is None:
-                raise Exception('no controller has been defined externally while this detector is a slave one')
-            else:
-                self.controller = controller
-        else:
+        if self.is_master:
             self.controller = "Mock controller"
+        else:
+            self.controller = controller
         self.emit_status(utils.ThreadCommand('update_main_settings', [['wait_time'],
                                                                       self.settings.child(('wait_time')).value(),
                                                                       'value']))

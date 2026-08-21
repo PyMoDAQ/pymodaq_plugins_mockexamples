@@ -185,36 +185,24 @@ class DAQ_1DViewer_Mock_spectro(DAQ_Viewer_base):
             --------
             set_Mock_data, daq_utils.ThreadCommand
         """
-        self.status.update(edict(initialized=False, info="", x_axis=None, y_axis=None, controller=None))
-        try:
-
-            if self.settings['controller_status'] == "Slave":
-                if controller is None:
-                    raise Exception('no controller has been defined externally while this detector is a slave one')
-                else:
-                    self.controller = controller
-            else:
-                self.controller = "Mock controller"
+        if self.is_master:
+            self.controller = "Mock controller"
             self.set_x_axis()
             self.set_Mock_data()
+        else:
+            self.controller = controller
 
-            # initialize viewers with the future type of data
-            self.dte_signal_temp.emit(DataToExport('Mock1D',
-                                                   data=[DataFromPlugins(name='Mock1', data=self.data_mock,
-                                                                         dim='Data1D',
-                                                                         axes=[self.x_axis],
-                                                                         labels=['Mock1', 'label2']),]))
+        # initialize viewers with the future type of data
+        self.dte_signal_temp.emit(DataToExport('Mock1D',
+                                               data=[DataFromPlugins(name='Mock1', data=self.data_mock,
+                                                                     dim='Data1D',
+                                                                     axes=[self.x_axis],
+                                                                     labels=['Mock1', 'label2']),]))
 
-            self.status.initialized = True
-            self.status.controller = self.controller
-            self.status.x_axis = self.x_axis
-            return self.status
-
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [getLineInfo() + str(e), 'log']))
-            self.status.info = getLineInfo() + str(e)
-            self.status.initialized = False
-            return self.status
+        self.status.initialized = True
+        self.status.controller = self.controller
+        self.status.x_axis = self.x_axis
+        return self.status
 
     def close(self):
         """

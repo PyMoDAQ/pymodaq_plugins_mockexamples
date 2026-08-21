@@ -1,5 +1,6 @@
 
 from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, main, comon_parameters
+from pymodaq_plugins_mockexamples.hardware.harmonics import Harmonics
 
 from pymodaq_utils.utils import ThreadCommand
 from pymodaq.utils.data import DataFromPlugins, Axis, DataToExport
@@ -28,7 +29,10 @@ class DAQ_1DViewer_MockRandom(DAQ_Viewer_base):
         pass
 
     def ini_detector(self, controller=None):
-        self.ini_detector_init(controller, RandomWrapper())
+        if self.is_master:
+            self.controller = RandomWrapper()
+        else:
+            self.controller = controller
         self.emit_status(ThreadCommand('update_main_settings',
                                        [['wait_time'], self.settings['wait_time'], 'value']))
 

@@ -88,9 +88,11 @@ class DAQ_1DViewer_Pinem(DAQ_Viewer_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.ini_detector_init(old_controller=controller,
-                               new_controller=PinemGenerator(1024, 0.05, 'Gaussian',
-                                                             amplitude=self.settings['amplitude']))
+        if self.is_master:
+            self.controller = PinemGenerator(1024, 0.05, 'Gaussian',
+                                             amplitude=self.settings['amplitude'])
+        else:
+            self.controller = comon_parameters
 
         info = "Whatever info you want to log"
         initialized = True

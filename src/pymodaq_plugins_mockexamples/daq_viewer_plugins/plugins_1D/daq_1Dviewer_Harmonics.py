@@ -63,10 +63,10 @@ class DAQ_1DViewer_Harmonics(DAQ_Viewer_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.ini_detector_init(old_controller=controller,
-                               new_controller=None)
         if self.is_master:
             self.controller = Harmonics()
+        else:
+            self.controller = controller
 
         self.controller.omega_noise = self.settings['omega_noise']
         self.controller.amplitude = 1.
