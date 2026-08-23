@@ -1,11 +1,11 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main  # base class
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, DataActuatorType  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun  # common set of parameters for all actuators
-
+from pymodaq.utils.data import DataActuator
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
-from easydict import EasyDict as edict  # type of dict
+
+
 from pymodaq_plugins_mockexamples.hardware.beam_steering import BeamSteering, BeamSteeringActuators
 
-from pymodaq_plugins_mockexamples import config
 
 
 class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
@@ -16,6 +16,7 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
     is_multiaxes = True
     stage_names = BeamSteeringActuators.axes[:2]
     _epsilon = 1
+    data_actuator_type = DataActuatorType.DataActuator
 
     params = [
             {'title': 'Tau (ms):', 'name': 'tau', 'type': 'int',
@@ -26,10 +27,10 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
         self.controller: BeamSteering = None
 
     def get_actuator_value(self):
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.get_value(axis)
+        pos = self.controller.get_value(self.axis_name)
         pos = self.get_position_with_scaling(pos)
-        return pos
+        return DataActuator(self._title, data=pos,
+                            units=self.axis_unit)
 
     def close(self):
         pass
@@ -57,16 +58,13 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
         position = self.check_bound(position)  #if user checked bounds, the defined bounds are applied here
         self.target_value = position
         position = self.set_position_with_scaling(position)
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.move_at(position, axis)
+        pos = self.controller.move_at(position.value(self.axis_unit), self.axis_name)
 
     def move_rel(self, position):
         position = self.check_bound(self.current_position + position) - self.current_position
         self.target_value = position + self.current_position
         position = self.set_position_with_scaling(self.target_value)
-
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.move_at(position, axis)
+        pos = self.controller.move_at(self.target_value.value(self.axis_unit), self.axis_name)
 
     def move_home(self):
         """
@@ -85,7 +83,7 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
           --------
           move_done
         """
-        self.controller.stop(self.settings['multiaxes', 'axis'])
+        self.controller.stop(self.axis_name)
         self.move_done()
 
 
