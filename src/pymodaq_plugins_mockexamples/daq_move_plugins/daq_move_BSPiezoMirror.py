@@ -1,3 +1,5 @@
+import numpy as np
+
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, DataActuatorType  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun  # common set of parameters for all actuators
 from pymodaq.utils.data import DataActuator
@@ -26,11 +28,12 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
     def ini_attributes(self):
         self.controller: BeamSteering = None
 
-    def get_actuator_value(self):
-        pos = self.controller.get_value(self.axis_name)
+    def get_actuator_value(self) -> DataActuator:
+        pos = DataActuator(self._title,
+                           data=[np.atleast_1d(self.controller.get_value(self.axis_name))],
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
-        return DataActuator(self._title, data=pos,
-                            units=self.axis_unit)
+        return pos
 
     def close(self):
         pass
@@ -61,10 +64,10 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
         pos = self.controller.move_at(position.value(self.axis_unit), self.axis_name)
 
     def move_rel(self, position):
-        position = self.check_bound(self.current_position + position) - self.current_position
-        self.target_value = position + self.current_position
+        position = self.check_bound(self.current_value + position) - self.current_value
+        self.target_value = position + self.current_value
         position = self.set_position_with_scaling(self.target_value)
-        pos = self.controller.move_at(self.target_value.value(self.axis_unit), self.axis_name)
+        pos = self.controller.move_at(position.value(self.axis_unit), self.axis_name)
 
     def move_home(self):
         """
