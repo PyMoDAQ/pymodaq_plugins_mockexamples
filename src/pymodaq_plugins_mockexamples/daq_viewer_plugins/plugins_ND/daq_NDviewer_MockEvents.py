@@ -169,7 +169,7 @@ class DAQ_NDViewer_MockEvents(DAQ_Viewer_base):
                                new_controller=PhotonYielder())
 
         callback = PhotonCallback(self.controller, self._queue)
-        self.callback_thread = QtCore.QThread()  # creation of a Qt5 thread
+        self.callback_thread = QtCore.QThread(self)  # creation of a Qt5 thread
         callback.moveToThread(self.callback_thread)  # callback object will live within this thread
         callback.data_sig.connect(self.emit_data)
 
@@ -309,7 +309,7 @@ class DAQ_NDViewer_MockEvents(DAQ_Viewer_base):
         self.controller.ind_grabed = -1
 
         save_callback = SaverCallback(self._queue, self.saver)
-        self.saver_thread = QtCore.QThread()
+        self.saver_thread = QtCore.QThread(self)
         save_callback.moveToThread(self.saver_thread)
         self.saver_thread.callback = save_callback
         self.saver_start_signal.connect(save_callback.work)
