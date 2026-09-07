@@ -13,12 +13,12 @@ class DAQ_1DViewer_MockSpectroErrors(DAQ_1DViewer_Mock_spectro):
         testing errors saving/loading purpose
     """
 
+    hardware_averaging = True
 
     def grab_data(self, Naverage=1, **kwargs):
         """
 
         """
-        Naverage = 10
         data_tot = [np.zeros(list(dat.shape)+[Naverage]) for dat in self.set_Mock_data()]
 
         for ind in range(Naverage):
