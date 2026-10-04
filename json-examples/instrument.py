@@ -376,7 +376,7 @@ class JSONActuator:
 
     # === transition actions ===
     def _on_signin(self, trame : LECOTrame):
-        self._communicator.set_fullname(f'{trame.sender.split('.')[0]}.{self._name}')
+        self._communicator.set_fullname(f"{trame.sender.split('.')[0]}.{self._name}")
 
     def _on_signout(self, trame : LECOTrame):
         pass
