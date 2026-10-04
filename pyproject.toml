@@ -13,7 +13,7 @@ name = "pymodaq_plugins_mockexamples"
 description = 'Set of advanced Mock examples to test PyMoDAQ functionnalities'
 dependencies = [
     "pymodaq>=5.2.8",
-    "pymodaq_data>=5.2.8"
+    "pymodaq_data>=5.2.8",
     "pillow",
 ]
 
