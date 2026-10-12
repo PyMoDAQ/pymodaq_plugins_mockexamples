@@ -14,7 +14,7 @@ logger = set_logger(get_module_name(__file__))
 
 
 class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
-
+    """ Generate 2D image that can be croped using the ROI select on the DAQViewer"""
     params = DAQ_2DViewer_MockCamera.params + \
              [{'title': 'Use Roi:', 'name': 'use_roi', 'type': 'bool'}]
 

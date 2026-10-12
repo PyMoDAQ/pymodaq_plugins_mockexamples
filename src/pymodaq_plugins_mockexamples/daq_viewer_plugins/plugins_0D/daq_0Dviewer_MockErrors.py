@@ -12,7 +12,7 @@ from pymodaq_plugins_mockexamples.hardware.random_wrapper import RandomWrapper
 
 
 class DAQ_0DViewer_MockErrors(DAQ_0DViewer_Mock):
-
+    """ To test the inclusion of error on 0D measurements"""
     hardware_averaging = True
 
 

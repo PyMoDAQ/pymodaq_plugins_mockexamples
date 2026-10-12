@@ -11,7 +11,7 @@ from pymodaq_plugins_mockexamples.hardware.random_wrapper import RandomWrapper
 
 
 class DAQ_0DViewer_MockRandom(DAQ_Viewer_base):
-
+    """ Generate a HyperGaussian but on random points"""
     live_mode_available = False
     hardware_averaging = False
 

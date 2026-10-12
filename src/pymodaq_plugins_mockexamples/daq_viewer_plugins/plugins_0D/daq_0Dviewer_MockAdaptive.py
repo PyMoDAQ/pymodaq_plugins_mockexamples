@@ -150,9 +150,8 @@ class DAQ_0DViewer_MockAdaptive(DAQ_Viewer_base):
                                                data=[DataFromPlugins(name='Mock1', data=[np.array(0)],
                                                                      dim='Data0D', labels=['RandomGaussians'])]))
 
-        self.status.initialized = True
-        self.status.controller = self.controller
-        return self.status
+        initialized = True
+        return 'Init', initialized
 
     def close(self):
         """
@@ -205,3 +204,7 @@ class DAQ_0DViewer_MockAdaptive(DAQ_Viewer_base):
         """
 
         return ""
+
+
+if __name__ == '__main__':
+    main(__file__)

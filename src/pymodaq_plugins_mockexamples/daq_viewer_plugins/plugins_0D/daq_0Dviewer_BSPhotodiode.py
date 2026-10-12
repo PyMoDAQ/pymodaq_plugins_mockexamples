@@ -11,6 +11,7 @@ from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_2D.daq_2Dviewer_BSC
 
 
 class DAQ_0DViewer_BSPhotodiode(DAQ_2DViewer_BSCamera):
+    """ Simulate the overall power send on to the Camera"""
 
     def average_data(self, Naverage, init=False):
         data_tmp = np.zeros_like(self.controller.get_photodiode_data())

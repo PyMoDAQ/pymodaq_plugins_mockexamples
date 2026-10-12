@@ -17,21 +17,22 @@ class DAQ_Move_MockHeater(DAQ_Move_base):
     """
     _controller_units = 'W'
     is_multiaxes = True
-    stage_names = ['Heater']
-    _epsilon = 0.01
+    _axis_names = ['Heater']
+    _epsilons = 0.01
 
-    params = [] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
+    params = [] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
     data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: HeaterController = None
 
-
     def get_actuator_value(self) -> DataActuator:
         """
 
         """
-        pos = DataActuator(self._title, data=self.controller.check_position())
+        pos = DataActuator(self._title,
+                           data=self.controller.check_position(),
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 

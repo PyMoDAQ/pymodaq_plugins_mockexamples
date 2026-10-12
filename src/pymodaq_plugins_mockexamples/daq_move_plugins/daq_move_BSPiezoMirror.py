@@ -16,14 +16,14 @@ class DAQ_Move_BSPiezoMirror(DAQ_Move_base):
 
     _controller_units = ''
     is_multiaxes = True
-    stage_names = BeamSteeringActuators.axes[:2]
-    _epsilon = 1
+    _axis_names = BeamSteeringActuators.axes[:2]
+    _epsilons = 1
     data_actuator_type = DataActuatorType.DataActuator
 
     params = [
             {'title': 'Tau (ms):', 'name': 'tau', 'type': 'int',
              'value': BeamSteering._tau * 1000, 'tip': 'Characteristic evolution time'},
-             ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
     def ini_attributes(self):
         self.controller: BeamSteering = None

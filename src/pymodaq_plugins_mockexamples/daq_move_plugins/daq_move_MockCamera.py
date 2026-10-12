@@ -1,8 +1,10 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main  # base class
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, DataActuatorType  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun  # common set of parameters for all actuators
 
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
 from easydict import EasyDict as edict  # type of dict
+
+from pymodaq.utils.data import DataActuator
 from ..hardware.camera_wrapper import Camera
 
 from pymodaq_plugins_mockexamples import config
@@ -19,17 +21,19 @@ class DAQ_Move_MockCamera(DAQ_Move_base):
     """
     _controller_units = ''
     is_multiaxes = True
-    stage_names = Camera.axes
-    _epsilon = 0.01
+    _axis_names = Camera.axes
+    _epsilons = 0.01
 
-    params = comon_parameters_fun(is_multiaxes, stage_names)
+    params = comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
+    data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: Camera = None
 
-    def get_actuator_value(self):
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.get_value(axis)
+    def get_actuator_value(self) -> DataActuator:
+        pos = DataActuator(self._title,
+                           data=self.controller.get_value(self.axis_name),
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -62,25 +66,27 @@ class DAQ_Move_MockCamera(DAQ_Move_base):
             --------
              daq_utils.ThreadCommand
         """
-        self.ini_stage_init(controller, Camera())
+        if self.is_master:
+            self.controller = Camera()
+        else:
+            self.controller = controller
+
         info = "Mock Camera"
         initialized = True
         return info, initialized
 
-    def move_abs(self, position):
+    def move_abs(self, position: DataActuator):
         position = self.check_bound(position)  #if user checked bounds, the defined bounds are applied here
         self.target_value = position
         position = self.set_position_with_scaling(position)
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.set_value(axis, position)
+        pos = self.controller.set_value(self.axis_name, position.value(self.axis_unit))
 
-    def move_rel(self, position):
-        position = self.check_bound(self.current_position + position) - self.current_position
-        self.target_value = position + self.current_position
+    def move_rel(self, position: DataActuator):
+        position = self.check_bound(self.current_value + position) - self.current_value
+        self.target_value = position + self.current_value
         position = self.set_position_with_scaling(self.target_value)
 
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.set_value(axis, position)
+        pos = self.controller.set_value(self.axis_name, position.value(self.axis_unit))
 
     def move_home(self):
         """

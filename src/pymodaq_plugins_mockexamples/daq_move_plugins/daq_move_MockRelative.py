@@ -1,3 +1,5 @@
+import numpy as np
+
 from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun,
                                                           DataActuatorType, DataActuator, main)
 from pymodaq.control_modules.daq_move_ui.utils import UiType
@@ -12,9 +14,9 @@ class DAQ_Move_MockRelative(DAQ_Move_base):
     _controller_units = ''
 
     is_multiaxes = True  # set to True if this plugin is controlled for a multiaxis controller (with a unique communication link)
-    axes_names = ['']
-    _epsilon = 0.01
-    params = comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+    _axis_names = ['']
+    _epsilons = 0.01
+    params = comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
 
     data_actuator_type = DataActuatorType.DataActuator
     ui_type = UiType.RELATIVE #for pymodaq >= 5.3.0
@@ -24,7 +26,7 @@ class DAQ_Move_MockRelative(DAQ_Move_base):
         self._internal_value = 0.
 
     def get_actuator_value(self) -> DataActuator:
-        raise NotImplementedError
+        raise NotImplementedError  # noqa: PMQ202  should never be called as actuator is binary  but this ssay the checker it is not an error
 
     def close(self):
         """
@@ -61,7 +63,7 @@ class DAQ_Move_MockRelative(DAQ_Move_base):
         value: (DataActuator) value of the absolute target positioning
         """
 
-        raise NotImplementedError
+        raise NotImplementedError # noqa PMQ202  # should never be called as actuator is binary  but this ssay the checker it is not an error
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by position
