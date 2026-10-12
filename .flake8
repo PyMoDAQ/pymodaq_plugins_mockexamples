@@ -1,0 +1,3 @@
+[flake8]
+# json-examples uses Python 3.12 syntax (type aliases) and is not part of the installed package
+exclude = json-examples,.git,build,dist
