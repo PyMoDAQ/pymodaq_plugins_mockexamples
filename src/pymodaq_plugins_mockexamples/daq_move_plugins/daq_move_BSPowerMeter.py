@@ -1,4 +1,4 @@
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main  # base class
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, main, DataActuatorType, DataActuator  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun  # common set of parameters for all actuators
 
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
@@ -14,20 +14,23 @@ class DAQ_Move_BSPowerMeter(DAQ_Move_base):
 
     _controller_units = 'W'
     is_multiaxes = True
-    stage_names = [BeamSteeringActuators.axes[-1]]
-    _epsilon = 0.5
+    _axis_names = [BeamSteeringActuators.axes[-1]]
+    _epsilons = 0.5
 
     params = [
             {'title': 'Tau (ms):', 'name': 'tau', 'type': 'int',
              'value': BeamSteering._tau * 1000, 'tip': 'Characteristic evolution time'},
-             ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
+
+    data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):
         self.controller: BeamSteering = None
 
-    def get_actuator_value(self):
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.get_value(axis)
+    def get_actuator_value(self) -> DataActuator:
+        pos = DataActuator(self._title,
+                           data=self.controller.get_value(self.axis_name),
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -61,25 +64,28 @@ class DAQ_Move_BSPowerMeter(DAQ_Move_base):
             --------
              daq_utils.ThreadCommand
         """
-        self.ini_stage_init(controller, BeamSteering())
+        if self.is_master:
+            self.controller = BeamSteering()
+        else:
+            self.controller = controller
         info = ""
         initialized = True
         return info, initialized
 
-    def move_abs(self, position):
+    def move_abs(self, position: DataActuator):
         position = self.check_bound(position)  #if user checked bounds, the defined bounds are applied here
         self.target_value = position
         position = self.set_position_with_scaling(position)
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.move_at(position, axis)
 
-    def move_rel(self, position):
-        position = self.check_bound(self.current_position + position) - self.current_position
-        self.target_value = position + self.current_position
+        self.controller.move_at(position.value(self.axis_unit), self.axis_name)
+
+    def move_rel(self, position: DataActuator):
+        position = self.check_bound(self.current_value + position) - self.current_value
+        self.target_value = position + self.current_value
         position = self.set_position_with_scaling(self.target_value)
 
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.move_at(position, axis)
+
+        self.controller.move_at(position.value(self.axis_unit), self.axis_name)
 
     def move_home(self):
         """
@@ -98,7 +104,7 @@ class DAQ_Move_BSPowerMeter(DAQ_Move_base):
           --------
           move_done
         """
-        self.controller.stop(self.settings['multiaxes', 'axis'])
+        self.controller.stop(self.axis_name)
         self.move_done()
 
 

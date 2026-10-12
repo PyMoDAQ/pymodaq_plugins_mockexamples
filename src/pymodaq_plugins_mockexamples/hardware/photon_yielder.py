@@ -74,7 +74,7 @@ if __name__ == '__main__':
     from pymodaq_data.data import  Axis, DataToExport, DataRaw, DataCalculated, DataWithAxes
     from pymodaq_data.h5modules.data_saving import DataSaverLoader
 
-    here = Path(r'C:\Users\weber\Labo\Programmes Python\PyMoDAQ_Git\pymodaq_plugins_folder\pymodaq_plugins_mockexamples\src\pymodaq_plugins_mockexamples\resources')
+    here = Path(__file__).parent.joinpath('resources')
 
     addhoc_file_path = here.joinpath('photons.h5')
     h5temp = H5SaverLowLevel()

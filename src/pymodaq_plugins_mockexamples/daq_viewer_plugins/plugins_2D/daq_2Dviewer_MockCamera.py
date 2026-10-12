@@ -13,7 +13,7 @@ from pymodaq_plugins_mockexamples.hardware.camera_wrapper import Camera
 
 
 class DAQ_2DViewer_MockCamera(DAQ_Viewer_base):
-
+    """ Generate various 2D images"""
     live_mode_available = True
     hardware_averaging = True
 

@@ -17,7 +17,7 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
     _controller_units = ['K', 'W']
     is_multiaxes = True
     _axis_names = ['Temperature', 'Power']
-    _epsilon = [0.01, 0.01]
+    _epsilons = [0.01, 0.01]
 
     params = [
                  {'title': 'PID Constants', 'name': 'constants', 'type': 'group', 'children': [
@@ -29,7 +29,7 @@ class DAQ_Move_MockTempController(DAQ_Move_base):
                  {'title': 'HasCooling:', 'name': 'has_cooling', 'type': 'led', 'value': TempController.has_cooling},
                  {'title': 'Enabled:', 'name': 'enabled', 'type': 'led', 'value': False},
                  {'title': 'Reset', 'name': 'reset', 'type': 'bool_push', 'value': False, 'label': 'Reset'},
-             ] + comon_parameters_fun(is_multiaxes, _axis_names, epsilon=_epsilon)
+             ] + comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
     data_actuator_type = DataActuatorType.DataActuator
 
     def ini_attributes(self):

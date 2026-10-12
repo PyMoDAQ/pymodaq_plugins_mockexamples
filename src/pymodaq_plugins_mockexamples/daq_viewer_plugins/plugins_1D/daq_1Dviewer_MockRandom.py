@@ -12,7 +12,7 @@ from pymodaq_plugins_mockexamples.hardware.random_wrapper import RandomWrapper
 
 
 class DAQ_1DViewer_MockRandom(DAQ_Viewer_base):
-
+    """ Generate shuffled 1D gaussian """
     live_mode_available = False
     hardware_averaging = False
 

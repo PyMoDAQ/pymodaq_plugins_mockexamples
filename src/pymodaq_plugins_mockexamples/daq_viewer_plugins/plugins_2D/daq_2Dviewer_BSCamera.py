@@ -11,7 +11,8 @@ from pymodaq_plugins_mockexamples.hardware.beam_steering import BeamSteering
 
 
 class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
-
+    """ Generate a 2D image with a spot on it whose position can be set
+    using DAQ_Move_BSPiezoMirror"""
     live_mode_available = True
     hardware_averaging = True
 

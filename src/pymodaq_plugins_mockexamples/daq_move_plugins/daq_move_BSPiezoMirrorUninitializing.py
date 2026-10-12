@@ -12,7 +12,10 @@ class DAQ_Move_BSPiezoMirrorUninitializing(DAQ_Move_BSPiezoMirror):
         """
 
         """
-        self.ini_stage_init(controller, BeamSteering())
+        if self.is_master:
+            self.controller = BeamSteering()
+        else:
+            self.controller = controller
         self.controller.tau = self.settings['tau'] / 1000
         raise IOError('Testing Purpose')  # simulating an error in initialization !!!
         info = ""

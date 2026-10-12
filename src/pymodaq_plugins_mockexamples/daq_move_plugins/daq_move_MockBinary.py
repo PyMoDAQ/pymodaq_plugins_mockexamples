@@ -13,10 +13,9 @@ class DAQ_Move_MockBinary(DAQ_Move_base):
     """
     _controller_units = ''
 
-    is_multiaxes = True  # set to True if this plugin is controlled for a multiaxis controller (with a unique communication link)
-    axes_names = ['']
-    _epsilon = 0.01
-    params = comon_parameters_fun(is_multiaxes, axes_names, epsilon=_epsilon)
+    _axis_names = ['']
+    _epsilons = 0.01
+    params = comon_parameters_fun(axis_names=_axis_names, epsilon=_epsilons)
     data_actuator_type = DataActuatorType.DataActuator
     ui_type = UiType.BINARY #for pymodaq >= 5.3.0
 
@@ -32,7 +31,10 @@ class DAQ_Move_MockBinary(DAQ_Move_base):
         self._internal_state = int(value)
 
     def get_actuator_value(self):
-        pos = DataActuator(data=self.internal_state)
+        pos = DataActuator(self._title,
+                           data=self.internal_state,
+                           units=self.axis_unit
+                           )
         pos = self.get_position_with_scaling(pos)
         return pos
 

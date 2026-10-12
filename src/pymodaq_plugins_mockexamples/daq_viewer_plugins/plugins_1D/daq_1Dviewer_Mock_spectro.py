@@ -199,10 +199,8 @@ class DAQ_1DViewer_Mock_spectro(DAQ_Viewer_base):
                                                                      axes=[self.x_axis],
                                                                      labels=['Mock1', 'label2']),]))
 
-        self.status.initialized = True
-        self.status.controller = self.controller
-        self.status.x_axis = self.x_axis
-        return self.status
+        initialized = True
+        return 'Initialized', initialized
 
     def close(self):
         """

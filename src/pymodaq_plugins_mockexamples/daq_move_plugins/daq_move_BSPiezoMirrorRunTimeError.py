@@ -8,11 +8,7 @@ class DAQ_Move_BSPiezoMirrorRunTimeError(DAQ_Move_BSPiezoMirror):
     """
 
     def get_actuator_value(self):
-        raise RuntimeError('Testing Purpose')
-        axis = self.settings['multiaxes', 'axis']
-        pos = self.controller.get_value(axis)
-        pos = self.get_position_with_scaling(pos)
-        return pos
+        raise RuntimeError('Testing Purpose')  #noqa PMQ202
 
 
 if __name__ == '__main__':

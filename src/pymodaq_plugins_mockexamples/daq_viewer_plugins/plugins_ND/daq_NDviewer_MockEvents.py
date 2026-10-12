@@ -127,7 +127,6 @@ class DAQ_NDViewer_MockEvents(DAQ_Viewer_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        # TODO for your custom plugin
         if param.name() in iter_children(self.settings.child('histogram'), []):
             if self._loader is not None:
                 self.process_events()
@@ -164,9 +163,10 @@ class DAQ_NDViewer_MockEvents(DAQ_Viewer_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-
-        self.ini_detector_init(old_controller=controller,
-                               new_controller=PhotonYielder())
+        if self.is_master:
+            self.controller = PhotonYielder()
+        else:
+            self.controller = controller
 
         callback = PhotonCallback(self.controller, self._queue)
         self.callback_thread = QtCore.QThread(self)  # creation of a Qt5 thread
@@ -272,7 +272,11 @@ class DAQ_NDViewer_MockEvents(DAQ_Viewer_base):
 
     def close(self):
         """Terminate the communication protocol"""
-        self.saver.close()
+        if self.saver is not None:
+            self.saver.close()
+        if hasattr(self, 'callback_thread'):
+            self.callback_thread.terminate()
+            self.callback_thread.wait()
 
     def grab_data(self, Naverage=1, **kwargs):
         """Start a grab from the detector

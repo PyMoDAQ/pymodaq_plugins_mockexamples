@@ -39,7 +39,9 @@ class DAQ_Move_Harmonics(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(data=self.controller.amplitude)  # when writing your own plugin replace this line
+        pos = DataActuator(self._title,
+                           data=self.controller.amplitude,
+                           units=self.axis_unit)
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -71,10 +73,10 @@ class DAQ_Move_Harmonics(DAQ_Move_base):
         initialized: bool
             False if initialization failed otherwise True
         """
-        self.controller = self.ini_stage_init(old_controller=controller,
-                                              new_controller=None)
         if self.is_master:
             self.controller = Harmonics()
+        else:
+            self.controller = controller
 
         info = "Whatever info you want to log"
         initialized = True
@@ -100,8 +102,8 @@ class DAQ_Move_Harmonics(DAQ_Move_base):
         ----------
         value: (float) value of the relative target positioning
         """
-        value = self.check_bound(self.current_position + value) - self.current_position
-        self.target_value = value + self.current_position
+        value = self.check_bound(self.current_value + value) - self.current_value
+        self.target_value = value + self.current_value
         value = self.set_position_relative_with_scaling(value)
 
         self.controller.amplitude = self.target_value.value()
