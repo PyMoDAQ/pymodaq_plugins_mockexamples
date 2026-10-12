@@ -30,9 +30,15 @@ def test_stage_names(init_qt):
 
     prog.axis_names = axis_names
     assert prog.axis_names == axis_names
+    # units and epsilons are defined per axis: they must follow the new axis names
+    prog.axis_units = ''
+    prog.epsilons = prog.epsilon
+    # the (mock) controller must know the new axis, the position is read when the axis changes
+    prog.controller.axes_indexes = [*prog.controller.axes_indexes, index_axis]
+    prog.controller._current_value = [*prog.controller._current_value, 0.]
 
     assert name_axis in prog.axis_names
     prog.axis_name = name_axis
     assert name_axis == prog.axis_name
-    assert prog.settings.child('multiaxes', 'axis').value() == index_axis
+    assert prog.settings.child('controller', 'axis').value() == index_axis
     assert prog.axis_value == index_axis

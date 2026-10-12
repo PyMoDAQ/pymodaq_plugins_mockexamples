@@ -35,6 +35,10 @@ class DAQ_Move_MockHeater(DAQ_Move_base):
         pos = self.get_position_with_scaling(pos)
         return pos
 
+    def close(self):
+        """Terminate the communication protocol (nothing to release for the simulated heater)"""
+        pass
+
     def commit_settings(self, param):
         pass
 

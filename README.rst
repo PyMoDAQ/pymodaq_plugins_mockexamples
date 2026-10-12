@@ -98,6 +98,12 @@ PID Models
 Extensions
 ==========
 
+* **Move and Grab** (*extensions/move_and_grab.py*): the smallest useful Dashboard extension, to start from when
+  writing yours. It moves an actuator of the Dashboard's experiment to a target, grabs a detector, shows the data and can
+  save them. It shows how to use the ``modules_manager``, how to wait for the instruments with callbacks instead of
+  blocking the GUI, units on the positions and a clean shutdown. It works with the mock instruments of PyMoDAQ. See
+  "How a Dashboard extension works" in the PyMoDAQ documentation.
+
 
 Installation instructions
 =========================

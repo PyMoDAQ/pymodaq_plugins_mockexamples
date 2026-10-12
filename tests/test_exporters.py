@@ -8,12 +8,12 @@ import numpy as np
 from pathlib import Path
 import pytest
 
-from pymodaq.utils.h5modules.saving import H5SaverLowLevel
-from pymodaq.utils import data as data_mod
-from pymodaq.utils.h5modules.data_saving import DataSaverLoader, AxisSaverLoader
+from pymodaq_data.h5modules.saving import H5SaverLowLevel
+from pymodaq_data import data as data_mod
+from pymodaq_data.h5modules.data_saving import DataSaverLoader, AxisSaverLoader
 
-from pymodaq.utils.h5modules import exporter as h5export
-from pymodaq.utils.h5modules.utils import register_exporter, register_exporters
+from pymodaq_data.h5modules import exporter as h5export
+from pymodaq_data.h5modules.utils import register_exporter, register_exporters
 
 
 def test_register_exporter_mock_examples():
