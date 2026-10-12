@@ -19,6 +19,7 @@ dependencies = [
     "pillow",
 ]
 
+
 authors = [
     {name = "Weber Sebastien", email = "sebastien.weber@cemes.fr"},
 ]
