@@ -21,6 +21,7 @@ class Spectrometer:
     Nx = 256  # pixels of the sensor
     infos = 'Spectrometer simulator'
     _epsilon = 0.01  # nm, the grating is considered at its target below that distance
+    reference_exposure_ms = 100.  # the exposure at which the amplitude of the line is ``amp``
 
     def __init__(self):
         self._amp = 10.
@@ -35,6 +36,7 @@ class Spectrometer:
         self._start_time = 0.
         self._moving = False
         self._peak_wavelength = 528.  # nm, the line that is measured
+        self.exposure_ms = self.reference_exposure_ms
 
     def close(self):
         self.stop()
@@ -116,5 +118,6 @@ class Spectrometer:
     def grab_spectrum(self) -> np.ndarray:
         """Intensity on each pixel: one line and some noise"""
         wavelengths = self.get_wavelength_axis()
-        return (self._amp * gauss1D(wavelengths, self._peak_wavelength, self._width)
-                + self._noise * np.random.rand(self.Nx))
+        return (self.exposure_ms / self.reference_exposure_ms
+                * (self._amp * gauss1D(wavelengths, self._peak_wavelength, self._width)
+                   + self._noise * np.random.rand(self.Nx)))

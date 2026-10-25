@@ -139,3 +139,48 @@ class TestActuator:
             assert move_home_and_wait(actuator).value('nm') == pytest.approx(600., abs=0.1)
         finally:
             actuator.close()
+
+
+class TestExtensionInterface:
+    """The methods called by the spectrometer extension answer by a status command carrying the value"""
+
+    @pytest.fixture
+    def statuses(self, detector, monkeypatch):
+        received = []
+        monkeypatch.setattr(detector, 'emit_status', received.append)  # standalone, the status is only printed
+        return received
+
+    @staticmethod
+    def _answer(statuses, command):
+        return next(status.attribute[0] for status in statuses if status.command == command)
+
+    def test_spectro_wl(self, detector, statuses):
+        detector.set_spectro_wl(570.)
+        assert self._answer(statuses, 'spectro_wl') == 570.
+        detector.get_spectro_wl()
+        assert detector.controller.get_wavelength() != 532.  # the grating is turning
+
+    def test_laser_wl(self, detector, statuses):
+        detector.set_laser_wl(632.8)
+        assert self._answer(statuses, 'laser_wl') == 632.8
+        assert detector.controller.peak_wavelength == 632.8
+
+    def test_exposure_scales_the_signal(self, detector, statuses):
+        detector.controller.peak_wavelength = detector.controller.get_wavelength()
+        ref = grab_and_wait(detector)[0][0].max()
+        detector.set_exposure_ms(50)
+        assert self._answer(statuses, 'exposure_ms') == 50
+        assert grab_and_wait(detector)[0][0].max() == pytest.approx(ref / 2, rel=0.2)
+
+
+def test_errors_variant_sends_the_standard_deviation(qapp):
+    from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_1D.daq_1Dviewer_MockSpectroErrors import \
+        DAQ_1DViewer_MockSpectroErrors
+    plugin = make_detector(DAQ_1DViewer_MockSpectroErrors)
+    try:
+        dwa = grab_and_wait(plugin, naverage=5)[0]
+        assert dwa.errors is not None and dwa.errors[0].shape == dwa[0].shape
+        assert dwa.errors[0].max() > 0
+    finally:
+        plugin.close()
+

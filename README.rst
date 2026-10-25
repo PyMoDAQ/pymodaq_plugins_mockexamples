@@ -71,8 +71,8 @@ Viewer1D
 
 * **MockRandom** (`gaussian scan`_): simulates a shuffled Gaussian; shows the sort button of the 1D viewer.
 * **Harmonics** (`harmonics`_): simulates the harmonics spectrum of the source; shows pint units and roi_select.
-* **Mock_spectro** (`spectrometer`_): simulates a spectrometer with laser line and exposure; shows a calibrated wavelength axis (nm).
-* **MockSpectroErrors** (`error tests`_): simulates the spectrometer averaged over 10 acquisitions; shows data with errors from averaging.
+* **CookbookSpectrometer** (`spectrometer`_): simulates a spectrometer with grating, laser line and exposure; shows a calibrated wavelength axis (nm) and the interface of the spectrometer extension. It replaces *Mock_spectro*, removed in this version: a saved preset that uses it must pick *CookbookSpectrometer* instead.
+* **MockSpectroErrors** (`error tests`_): simulates the spectrometer averaged over several acquisitions; shows data with errors from averaging.
 
 Viewer2D
 ++++++++
@@ -148,7 +148,7 @@ plugin to stop it), they load in the Dashboard of PyMoDAQ 5.3.
 
        **Spectrometer with a calibrated axis**
 
-     - 1D *Mock_spectro*
+     - 1D *CookbookSpectrometer*, *MockSpectroErrors*; actuator *CookbookSpectrometer*
      - none
      - A wavelength axis that follows a setting, data with errors
    * - .. _actuator interfaces:
@@ -218,7 +218,8 @@ done by the camera                      ``hardware/beam_steering.py``           
 Spectrometer, calibrated axis that      ``daq_1Dviewer_CookbookSpectrometer``,          A wavelength axis in nm asked to the instrument at every grab
 changes, actuator slave of a detector   ``daq_move_CookbookSpectrometer``,              because the grating moves it. The actuator (central wavelength)
                                         ``hardware/spectrometer.py``                    and the detector share one instrument; a homing that waits for
-                                                                                        its end and calls ``move_done``
+                                                                                        its end and calls ``move_done``. It also has the interface of
+                                                                                        the spectrometer extension (laser line, exposure time)
 ======================================  ==============================================  ================================================================
 
 Patterns already shown by the mock instruments of this package
@@ -234,8 +235,6 @@ controller                              detector)                               
 2D camera                               ``BSCamera`` (2D detector),                     Pixel axes, live acquisition, ROI selection done on the
                                         ``RoiStuff``                                    viewer (``roi_select`` with ``RoiInfo``). The hardware ROI and
                                                                                         binning are in the cookbook above
-1D spectrometer with a calibrated axis  ``Mock_spectro`` (1D detector)                  A wavelength axis in nm that follows the laser line setting,
-                                                                                        and an exposure time that scales the signal
 Simulated device, no hardware           every plugin of this package                    A pure python controller behind a small wrapper class in
                                                                                         ``hardware/``: the plugins run on it, no hardware needed
 ======================================  ==============================================  ================================================================
