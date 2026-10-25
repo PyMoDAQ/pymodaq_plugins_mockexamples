@@ -90,149 +90,96 @@ ViewerND
 Simulated setups
 ================
 
-The instruments above grouped by what they simulate. Instruments of a setup that share a controller must have the
-same *controller ID* in the Dashboard. The experiment files (``resources/*.xml``) are to be copied in the
-``.pymodaq/experiments`` folder, they load in the Dashboard of PyMoDAQ 5.3.
+The instruments above grouped by what they simulate (the links of the lists lead to the rows of this table).
+Instruments of a setup that share a controller must have the same *controller ID* in the Dashboard. The
+experiment files (``resources/*.xml``) are to be copied in the ``.pymodaq/experiments`` folder, they load in the
+Dashboard of PyMoDAQ 5.3.
 
-.. _beam steering:
+.. list-table::
+   :header-rows: 1
+   :widths: 22 33 17 28
 
-Beam steering with a piezo mirror
-+++++++++++++++++++++++++++++++++
+   * - Setup
+     - Instruments
+     - Experiment file
+     - What it shows
+   * - .. _beam steering:
 
-One controller shared by five modules, moves that take time, a 2D and a 0D detector reading the same beam.
+       **Beam steering with a piezo mirror**
 
-Experiment file: ``beam_steering_piezo.xml``.
+     - actuators *BSPiezoMirror*, *BSPowerMeter*; 0D *BSPhotodiode*; 2D *BSCamera*
+     - ``beam_steering_piezo.xml``
+     - One controller shared by five modules, moves that take time, a 2D and a 0D detector on the same beam
+   * - .. _mock camera:
 
-- *BSPiezoMirror* (actuator): simulates the X and Y tilt axes of a piezo mirror steering a laser beam, with a response time set by the *Tau* setting; shows a multi-axis actuator sharing one controller with the power meter, camera and photodiode of the same name family (same controller ID), and a move that takes time.
-- *BSPowerMeter* (actuator): simulates the power (W) of the steered beam, set through an actuator axis; shows an actuator on the *Power* axis of the shared beam steering controller.
-- *BSPhotodiode* (0D detector): simulates a photodiode measuring the total power sent on the beam steering camera; shows a 0D detector derived from the 2D one, sharing the beam steering controller, with its own averaging.
-- *BSCamera* (2D detector): simulates a camera imaging a laser spot whose position is set by the *BSPiezoMirror* actuator, with beam size, angle, Gaussian-ness and power noise settings; shows a live acquisition with hardware averaging, and a controller shared with the beam steering actuators.
+       **Beam steering on a camera image**
 
-.. _mock camera:
+     - actuators *MockCamera*; 2D *MockCamera*, *RoiStuff*
+     - ``beam_steering.xml``
+     - Axes moving a camera image, live acquisition, ROI selection; the PID model *PIDModelBeamSteering* uses its Xpiezo, Ypiezo and Camera
+   * - .. _heater:
 
-Beam steering on a camera image
-+++++++++++++++++++++++++++++++
+       **Heater and PID**
 
-Axes moving the image of a camera, live acquisition and ROI selection. The PID model *PIDModelBeamSteering* uses the axes Xpiezo and Ypiezo and the detector Camera of the experiment.
+     - actuators *MockHeater*; 0D *MockHeater*
+     - ``Heater.xml``
+     - A closed loop for the PID extension
+   * - .. _temperature controller:
 
-Experiment file: ``beam_steering.xml``.
+       **Temperature controller with a PID loop**
 
-- *MockCamera* (actuator): simulates the X, Y and Theta axes moving the image of the *MockCamera* 2D detector; shows a multi-axis actuator sharing its controller with a detector.
-- *MockCamera* (2D detector): simulates a camera generating various images, with settings for the number of colours and panels, a threshold and a read-only property; shows pixel axes, a live acquisition, hardware averaging, several data in one acquisition, and the X, Y and Theta actuators of the same name moving the image.
-- *RoiStuff* (2D detector): simulates the *MockCamera* camera whose image can be cropped to the ROI drawn on the viewer; shows the ``roi_select`` method receiving a ``RoiInfo`` from the viewer, and data cropped inside the plugin.
+     - actuators *MockTempController*; 0D *MockTempController*
+     - ``TempController.xml``
+     - A master actuator and a slave detector on one controller
+   * - .. _gaussian scan:
 
-.. _heater:
+       **Scanning a known signal**
 
-Heater and PID
-++++++++++++++
+     - actuators *MockRandom*; 0D *MockRandom*; 1D *MockRandom*
+     - none
+     - Scans of a noisy Gaussian, the sort button of the 1D viewer
+   * - .. _harmonics:
 
-A closed loop for the PID extension.
+       **Harmonics source**
 
-Experiment file: ``Heater.xml``.
+     - actuators *Harmonics*; 0D *Harmonics*; 1D *Harmonics*
+     - none
+     - Physical units from ``pint`` quantities
+   * - .. _complex signal:
 
-- *MockHeater* (actuator): simulates the heating power (W) applied to something measured by the *MockHeater* 0D detector; shows a closed loop to test the PID extension.
-- *MockHeater* (0D detector): simulates the temperature of something heated by the *MockHeater* actuator, with noise and ambient temperature settings; shows a detector in a closed loop with an actuator, for the PID extension.
+       **Complex signal and adaptive scan**
 
-.. _temperature controller:
+     - actuators *MockComplexSignal*; 0D *MockComplexSignal*, *MockAdaptive*
+     - none
+     - Scans in one or two dimensions, the ``positions`` argument of an adaptive scan
+   * - .. _spectrometer:
 
-Temperature controller with a PID loop
-++++++++++++++++++++++++++++++++++++++
+       **Spectrometer with a calibrated axis**
 
-A master actuator and a slave detector on one controller, with an inner PID loop.
+     - 1D *Mock_spectro*
+     - none
+     - A wavelength axis that follows a setting, data with errors
+   * - .. _actuator interfaces:
 
-Experiment file: ``TempController.xml``.
+       **Multi-axis and user interface examples**
 
-- *MockTempController* (actuator): simulates a temperature controller with an inner PID loop, or a manual power control when the loop is disabled (axes *Temperature* and *Power*); shows a master actuator whose controller is shared with the *MockTempController* 0D detector.
-- *MockTempController* (0D detector): simulates the temperature and the applied power of the temperature controller; shows a detector that is the slave of the *MockTempController* actuator (it receives its controller).
+     - actuators *MockNamedAxes*, *MockBinary*, *MockRelative*
+     - none
+     - Named axes on one controller, binary and relative user interfaces
+   * - .. _photon events:
 
-.. _gaussian scan:
+       **Photon counting camera**
 
-Scanning a known signal
-+++++++++++++++++++++++
+     - ND *MockEvents*
+     - none
+     - N-dimensional data, an acquisition thread with Qt callbacks, temporary data
+   * - .. _error tests:
 
-Scans of a noisy Gaussian, and the sort button of the 1D viewer.
+       **Error handling**
 
-No experiment file: add the instruments in the Dashboard and give them the same controller ID.
-
-- *MockRandom* (actuator): simulates a stage setting the position (0 to 20) of a noisy Gaussian read by the *MockRandom* detectors; shows a single axis actuator sharing its controller with 0D and 1D detectors of the same controller ID, to scan a known signal.
-- *MockRandom* (0D detector): simulates a noisy Gaussian read at the value of the *MockRandom* actuator; shows a detector coupled to an actuator through a shared controller ID.
-- *MockRandom* (1D detector): simulates a shuffled Gaussian on a non-sorted axis; shows the sort button of the 1D data viewer.
-
-.. _harmonics:
-
-Harmonics source
-++++++++++++++++
-
-Physical units carried by ``pint`` quantities from the controller to the data.
-
-No experiment file: add the instruments in the Dashboard and give them the same controller ID.
-
-- *Harmonics* (actuator): simulates the power (W) of a source read by the *Harmonics* detectors, with a slow response; shows physical units carried by ``pint`` quantities from the controller to the actuator, and a per-axis epsilon.
-- *Harmonics* (0D detector): simulates the power (W) of the source driven by the *Harmonics* actuator; shows a 0D detector emitting data with units from ``pint`` quantities.
-- *Harmonics* (1D detector): simulates a spectrum of the harmonics of the source driven by the *Harmonics* actuator, with settings for the number of harmonics and the noise on the energy axis; shows an axis with units from ``pint`` quantities, and the ``roi_select`` method receiving the ROI drawn on the viewer.
-
-.. _complex signal:
-
-Complex signal and adaptive scan
-++++++++++++++++++++++++++++++++
-
-Scans in one or two dimensions, and the ``positions`` argument of an adaptive scan.
-
-No experiment file: add the instruments in the Dashboard and give them the same controller ID.
-
-- *MockComplexSignal* (actuator): simulates the X and Y axes of a sample scanned by the *MockComplexSignal* 0D detector, with a response time set by the *Tau* setting; shows axes given as a dictionary of name and integer identifier, and a signal to scan in one or two dimensions.
-- *MockComplexSignal* (0D detector): simulates a signal made of Gaussians, Lorentzians or a CNRS image, read at the position of the *MockComplexSignal* actuators; shows a 0D detector to scan in one or two dimensions, with structures that can be regenerated.
-- *MockAdaptive* (0D detector): simulates a signal (Gaussians, Lorentzians or a CNRS image) evaluated at the positions requested by the caller; shows ``grab_data`` receiving the ``positions`` keyword argument, as sent by an adaptive scan.
-
-.. _spectrometer:
-
-Spectrometer with a calibrated axis
-+++++++++++++++++++++++++++++++++++
-
-A wavelength axis that follows a setting, and data with errors.
-
-No experiment file: add the instrument in the Dashboard.
-
-- *Mock_spectro* (1D detector): simulates a spectrometer with a laser line, an exposure time and a calibrated wavelength axis, producing one curve with two peaks or two curves; shows an axis (nm) recomputed when a setting changes, and the specific methods used by the ``pymodaq_spectrometer`` package.
-
-.. _actuator interfaces:
-
-Multi-axis and user interface examples
-++++++++++++++++++++++++++++++++++++++
-
-Named axes on one controller, and the binary and relative user interfaces of an actuator.
-
-No experiment file: add the instruments in the Dashboard.
-
-- *MockNamedAxes* (actuator): simulates a controller with several axes (X, Y and Z); shows axes having both a name and an integer identifier, the first axis creating the controller and the others receiving it.
-- *MockBinary* (actuator): simulates a device with two states, 0 or 1; shows the binary user interface of an actuator (``ui_type = UiType.BINARY``).
-- *MockRelative* (actuator): simulates a stage that can only be moved relatively, with no absolute reference; shows the relative user interface of an actuator (``ui_type = UiType.RELATIVE``), with only ``move_rel`` implemented.
-
-.. _photon events:
-
-Photon counting camera
-++++++++++++++++++++++
-
-N-dimensional data, an acquisition thread with Qt callbacks, temporary data emitted during the acquisition.
-
-No experiment file: add the instrument in the Dashboard.
-
-- *MockEvents* (ND detector): simulates a photon counting camera: the position and arrival time of photons replayed from a recorded file; shows N-dimensional data, an acquisition thread with Qt callbacks, temporary data emitted during the acquisition, histograms in time of flight and in position, and saving the events.
-
-.. _error tests:
-
-Error handling
-++++++++++++++
-
-Errors on reading and on initialization, and data carrying errors.
-
-No experiment file: add the instruments in the Dashboard.
-
-- *BSPiezoMirrorRunTimeError* (actuator): simulates the piezo mirror, but reading its position raises a ``RuntimeError``; shows how PyMoDAQ reacts to an error raised by ``get_actuator_value``.
-- *BSPiezoMirrorTimeout* (actuator): simulates the piezo mirror, but the initialization lasts twice the initialization polling time and then fails with an ``IOError``; shows how PyMoDAQ reacts to an initialization timeout.
-- *BSPiezoMirrorUninitializing* (actuator): simulates the piezo mirror, but the initialization fails at once with an ``IOError``; shows how PyMoDAQ reacts to a failed initialization.
-- *MockErrors* (0D detector): simulates a 0D measurement with its standard deviation; shows data carrying errors, computed from the hardware averaging (``hardware_averaging = True``), to test saving and loading them.
-- *MockSpectroErrors* (1D detector): simulates the *Mock_spectro* spectrometer, each data being the average and the standard deviation of 10 acquisitions; shows data with errors from hardware averaging, to test saving and loading them.
+     - actuators *BSPiezoMirrorRunTimeError*, *BSPiezoMirrorTimeout*, *BSPiezoMirrorUninitializing*; 0D *MockErrors*; 1D *MockSpectroErrors*
+     - none
+     - Errors on reading and on initialization, data carrying errors
 
 Cookbook of device patterns
 ===========================
