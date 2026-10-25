@@ -181,7 +181,7 @@ Short, runnable and tested plugins to copy from when writing a plugin for a real
 to a simulated device: a stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``) or a 3-axis controller
 behind a library (``hardware/mock_dll_controller.py``). Each file starts with a header telling what to
 copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``,
-``tests/test_cookbook_dll.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_bs_camera.py``) show how to test a
+``tests/test_cookbook_dll.py``, ``tests/test_cookbook_dotnet.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_bs_camera.py``) show how to test a
 plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
 Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
@@ -220,6 +220,17 @@ changes, actuator slave of a detector   ``daq_move_CookbookSpectrometer``,      
                                         ``hardware/spectrometer.py``                    and the detector share one instrument; a homing that waits for
                                                                                         its end and calls ``move_done``. It also has the interface of
                                                                                         the spectrometer extension (laser line, exposure time)
+Vendor .NET assembly, multi-axis        ``daq_move_CookbookDotNet`` (3 axes),           A ``pythonnet`` driver: ``out`` parameter returned in a tuple,
+controller, ``pythonnet``               ``daq_0Dviewer_CookbookDotNet``,                an event given a Python function with ``+=`` and ``-=``, the
+                                        ``hardware/dotnet_controller.py``               exception type of the assembly caught, ``IDisposable``. The
+                                                                                        assembly is simulated by an object used like its namespace. The
+                                                                                        end of a move is an event raised by a thread of the assembly,
+                                                                                        turned into a Qt signal
+Starting .NET and loading an assembly   ``hardware/dotnet_runtime.py``,                 ``load_dotnet`` (runtime per platform, clear error) and
+                                        ``hardware/system_dotnet_demo.py``              ``load_assembly`` (names, path from a setting or an environment
+                                                                                        variable, an error that lists what was tried). Real calls to the
+                                                                                        .NET libraries (``Int32.TryParse``, ``List<double>``,
+                                                                                        ``MemoryStream``, ``Timer.Elapsed`` from another thread)
 ======================================  ==============================================  ================================================================
 
 Patterns already shown by the mock instruments of this package
@@ -241,6 +252,10 @@ Simulated device, no hardware           every plugin of this package            
 
 Patterns not yet covered: an instrument driven by a Python binding of the manufacturer (it is packaged like the
 drivers of ``hardware/``: a class that wraps the binding, created by ``ini_stage``).
+
+The .NET recipe needs ``pythonnet`` (installed with this package) and a .NET runtime only when it talks to a real assembly:
+the simulated one runs anywhere. The tests that call the .NET libraries of the runtime are skipped if there is none
+(Windows has the .NET Framework; elsewhere install .NET 6 or later).
 
 
 PID Models

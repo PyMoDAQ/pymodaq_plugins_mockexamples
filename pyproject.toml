@@ -18,6 +18,7 @@ dependencies = [
     "pymodaq_data>=5.3.0",
     "pillow",
     "pymeasure>=0.14",  # also brings pyvisa and pyserial: needed by the cookbook recipes of the hardware folder
+    "pythonnet>=3.0.3",  # the cookbook recipe on a .NET assembly (it needs a .NET runtime only when it talks to one)
 ]
 
 
