@@ -37,18 +37,20 @@ class TestLoadLibrary:
     def test_a_wrong_path_falls_back_to_the_names(self, tmp_path):
         assert load_library(system_library_demo.C_LIBRARY, path=tmp_path / 'nothing.dll') is not None
 
-    def test_environment_variable(self, monkeypatch):
-        monkeypatch.setenv('MY_LIBRARY', '/does/not/exist')
+    def test_environment_variable(self, monkeypatch, tmp_path):
+        missing = str(tmp_path / 'does_not_exist.dll')  # paths are written in the native form of the system
+        monkeypatch.setenv('MY_LIBRARY', missing)
         with pytest.raises(LibraryNotFoundError) as e:
             load_library('no_such_library_for_the_tests', env_var='MY_LIBRARY')
-        assert '/does/not/exist' in str(e.value) and 'MY_LIBRARY' in str(e.value)
+        assert missing in str(e.value) and 'MY_LIBRARY' in str(e.value)
 
-    def test_missing_library_says_what_was_tried(self):
+    def test_missing_library_says_what_was_tried(self, tmp_path):
+        folder = str(tmp_path / 'somewhere')
         with pytest.raises(LibraryNotFoundError) as e:
             load_library({'Linux': ['libmissing.so'], 'Darwin': ['libmissing.dylib'], 'Windows': ['missing.dll']},
-                         path='/somewhere')
+                         path=folder)
         message = str(e.value)
-        assert 'Tried' in message and 'missing' in message and '/somewhere' in message
+        assert 'Tried' in message and 'missing' in message and folder in message
         assert isinstance(e.value, OSError)
 
     def test_unknown_convention(self):
