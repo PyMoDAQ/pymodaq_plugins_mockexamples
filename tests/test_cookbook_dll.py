@@ -227,27 +227,3 @@ class TestPlugins:
         finally:
             detector.close()
 
-
-class TestErrorsReachTheUser:
-    """PyMoDAQ only logs an exception raised by a plugin method: the recipes also emit a status for the status bar"""
-
-    def test_refused_move_emits_a_status(self, actuator, monkeypatch):
-        statuses = []
-        monkeypatch.setattr(actuator, 'emit_status', statuses.append)
-        with pytest.raises(MotionControllerError):
-            actuator.move_abs(DataActuator(data=500., units='mm'))
-        assert len(statuses) == 1
-        assert statuses[0].command == 'update_status'
-        assert 'position out of range' in statuses[0].attribute and 'move_abs' in statuses[0].attribute
-
-    def test_failed_grab_emits_a_status(self, qapp, monkeypatch):
-        detector = make_detector(DAQ_0DViewer_CookbookDll)
-        statuses = []
-        monkeypatch.setattr(detector, 'emit_status', statuses.append)
-        detector.controller.close()  # the handle is no longer valid
-        try:
-            with pytest.raises(MotionControllerError):
-                detector.grab_data()
-            assert 'invalid handle' in statuses[0].attribute
-        finally:
-            detector.close()

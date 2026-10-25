@@ -7,8 +7,6 @@ ADAPT: ``params``, ``ini_stage`` (the adapter and the driver class), ``_controll
 the names of the driver properties used in the methods.
 KEEP: the structure of the methods, the master/slave handling in ``ini_stage`` and ``close``, and the call of
 ``move_done`` at the end of ``move_home``.
-ERRORS: ``@report_errors`` shows the error of the driver in the status bar of the module, as PyMoDAQ only logs an
-exception raised by a plugin method; keep it on the methods that call the driver.
 
 Try it without hardware: leave the address to ``MOCK``. Give the same controller ID to this actuator and to the
 detector ``CookbookPymeasure`` to make them share the driver. See ``tests/test_cookbook_drivers.py`` and ``tests/test_cookbook_plugins.py`` for the tests.
@@ -21,7 +19,6 @@ from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_p
                                                           DataActuator, main)
 
 from pymodaq_plugins_mockexamples.hardware.pymeasure_source import CookbookSource, MockAdapter
-from pymodaq_plugins_mockexamples.utils import report_errors
 
 
 class DAQ_Move_CookbookPymeasure(DAQ_Move_base):
@@ -55,21 +52,18 @@ class DAQ_Move_CookbookPymeasure(DAQ_Move_base):
         position = DataActuator(data=self.controller.position, units=self.axis_unit)
         return self.get_position_with_scaling(position)
 
-    @report_errors
     def move_abs(self, value: DataActuator):
         value = self.check_bound(value)
         self.target_value = value
         value = self.set_position_with_scaling(value)
         self.controller.position = value.value(self.axis_unit)  # validated by the driver, then sent
 
-    @report_errors
     def move_rel(self, value: DataActuator):
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
         value = self.set_position_with_scaling(self.target_value)
         self.controller.position = value.value(self.axis_unit)
 
-    @report_errors
     def move_home(self):
         self.controller.home()
         t_end = time.monotonic() + 10.
@@ -77,7 +71,6 @@ class DAQ_Move_CookbookPymeasure(DAQ_Move_base):
             time.sleep(0.01)
         self.move_done()  # PyMoDAQ does not poll the position after a home
 
-    @report_errors
     def stop_motion(self):
         self.controller.stop()
 
