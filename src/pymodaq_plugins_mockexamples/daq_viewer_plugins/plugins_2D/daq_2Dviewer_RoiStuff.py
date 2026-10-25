@@ -23,18 +23,11 @@ class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_BSCamera):
         self.roi_select_info: RoiInfo = None
         self.roi_select_viewer_index: int = None
 
-    def ini_detector(self, controller=None):
-        info, initialized = super().ini_detector(controller)
-
-
-
-        self.x_axis = Axis(size=self.controller.camera.Nx, offset=23,
-                           scaling=0.5, label='scaled X', index=1)
-        self.y_axis = Axis(size=self.controller.camera.Ny,
-                           offset=-16,
-                           scaling=2., label='scaled Y', index=0)
-
-        return info, initialized
+    def _build_axes(self):
+        """Arbitrary scaled axes, to show that the ROI of the viewer is given in the units of the axes"""
+        rows, columns = self.controller.camera.shape
+        return (Axis(size=columns, offset=23, scaling=0.5, label='scaled X', index=1),
+                Axis(size=rows, offset=-16, scaling=2., label='scaled Y', index=0))
 
     def ROISelect(self, info: QRectF):
         raise DeprecationWarning('Do not use it anymore, use the roi_select method')

@@ -12,7 +12,13 @@ from pymodaq_plugins_mockexamples.hardware.beam_steering import BeamSteering
 
 class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
     """ Generate a 2D image with a spot on it whose position can be set
-    using DAQ_Move_BSPiezoMirror"""
+    using DAQ_Move_BSPiezoMirror
+
+    It is also the camera recipe of the cookbook. It shows what a camera driver gives to its plugin: a region of
+    interest (ROI) and a binning applied by the camera itself, an exposure time that scales the signal, and axes
+    calibrated in um (the pixel size of the sensor) that follow the ROI and the binning. Compare with
+    ``DAQ_2DViewer_RoiStuff``, where the ROI is drawn in the viewer and applied by the plugin after the grab.
+    """
     live_mode_available = True
     hardware_averaging = True
 
@@ -32,6 +38,21 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
             {'title': 'std_x', 'name': 'std_x', 'type': 'float', 'value': 0.,
              'tip': 'Standard deviation of the random walk of the beam position'},
             {'title': 'std_y', 'name': 'std_y', 'type': 'float', 'value': 0.},
+        ]},
+        {'title': 'Sensor', 'name': 'sensor', 'type': 'group', 'children': [
+            {'title': 'Pixel size (um)', 'name': 'pixel_size', 'type': 'float', 'value': 5.5, 'min': 0.1,
+             'tip': 'Size of a pixel of the sensor: sets the calibration of the axes'},
+            {'title': 'Exposure (ms)', 'name': 'exposure_ms', 'type': 'float', 'value': 100., 'min': 0.1,
+             'tip': 'The signal is proportional to the exposure time (100 ms gives the reference signal)'},
+            {'title': 'Binning', 'name': 'binning', 'type': 'list', 'value': 1, 'limits': [1, 2, 4, 8],
+             'tip': 'Sensor pixels summed along each direction. Pixels that do not fill a bin are dropped'},
+            {'title': 'ROI', 'name': 'roi', 'type': 'group', 'children': [
+                {'title': 'X (pixel)', 'name': 'roi_x', 'type': 'int', 'value': 0, 'min': 0, 'max': 255},
+                {'title': 'Y (pixel)', 'name': 'roi_y', 'type': 'int', 'value': 0, 'min': 0, 'max': 255},
+                {'title': 'Width (pixel)', 'name': 'roi_width', 'type': 'int', 'value': 256, 'min': 1, 'max': 256},
+                {'title': 'Height (pixel)', 'name': 'roi_height', 'type': 'int', 'value': 256, 'min': 1,
+                 'max': 256},
+            ]},
         ]},
         {'title': 'Nimages colors:', 'name': 'Nimagescolor', 'type': 'int', 'value': 1, 'min': 1, 'max': 3},
         {'title': 'Nimages pannels:', 'name': 'Nimagespannel', 'type': 'int', 'value': 1, 'min': 1},
@@ -59,6 +80,13 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
             setattr(self.controller.camera, param.name(), param.value())
             if param.name() == 'is_drifting':
                 self.controller.camera.refresh_drift()
+        elif param.name() in ('pixel_size', 'exposure_ms', 'binning'):
+            setattr(self.controller.camera, param.name(), param.value())
+            self.update_axes()
+        elif param.name().startswith('roi_'):
+            self.controller.camera.set_roi(*(self.settings['sensor', 'roi', name] for name in
+                                             ('roi_x', 'roi_y', 'roi_width', 'roi_height')))
+            self.update_axes()
 
     def ini_detector(self, controller=None):
         if self.is_master:
@@ -66,13 +94,13 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
         else:
             self.controller = controller
         for name in ('size_x', 'size_y', 'angle', 'index_n', 'power_noise', 'fringes', 'is_drifting', 'drift_x',
-                     'drift_y', 'std_x', 'std_y'):  # apply the settings loaded from a preset
+                     'drift_y', 'std_x', 'std_y', 'pixel_size', 'exposure_ms', 'binning',
+                     'roi_x'):  # apply the settings loaded from a preset (the four ROI values at once)
             self.commit_settings(self.settings.child(*self._path(name)))
         self.emit_status(ThreadCommand('update_main_settings',
                                        [['wait_time'], self.settings['wait_time'], 'value']))
 
-        self.x_axis = Axis(data=self.controller.camera.x_axis, label='pixel', index=1)
-        self.y_axis = Axis(data=self.controller.camera.y_axis, label='pixel', index=0)
+        self.update_axes()
 
         initialized = True
         info = 'Controller ok'
@@ -80,7 +108,24 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
 
     @staticmethod
     def _path(name: str):
-        return ('is_drifting', name) if name.endswith(('_x', '_y')) and name.startswith(('drift', 'std')) else (name,)
+        if name.startswith(('drift', 'std')) and name.endswith(('_x', '_y')):
+            return 'is_drifting', name
+        if name.startswith('roi_'):
+            return 'sensor', 'roi', name
+        if name in ('pixel_size', 'exposure_ms', 'binning'):
+            return 'sensor', name
+        return (name,)
+
+    def _build_axes(self):
+        """The axes (x, y) of the images, in um: they follow the ROI and the binning of the camera"""
+        camera = self.controller.camera
+        x, y = camera.get_axes()
+        return (Axis(data=x, label='x', units='um', index=1),
+                Axis(data=y, label='y', units='um', index=0))
+
+    def update_axes(self):
+        """Axes are sent with the data, so changing them here is enough"""
+        self.x_axis, self.y_axis = self._build_axes()
 
     def close(self):
         pass

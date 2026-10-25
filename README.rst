@@ -181,7 +181,8 @@ Short, runnable and tested plugins to copy from when writing a plugin for a real
 to a simulated device: a stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``) or a 3-axis controller
 behind a library (``hardware/mock_dll_controller.py``). Each file starts with a header telling what to
 copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``,
-``tests/test_cookbook_dll.py``) show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
+``tests/test_cookbook_dll.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_bs_camera.py``) show how to test a
+plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
 Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
 initialized is the master and creates it, the other is the slave and receives it.
@@ -209,6 +210,15 @@ Loading a native library                ``hardware/native_library.py``,         
                                         ``hardware/system_library_demo.py``             environment variable, an error that lists what was tried. Real
                                                                                         calls to the C library of the system (``strlen``, ``frexp``,
                                                                                         ``qsort`` with a callback)
+Camera (2D detector), ROI and binning   ``daq_2Dviewer_BSCamera``,                      What a camera driver gives its plugin: a ROI and a binning
+done by the camera                      ``hardware/beam_steering.py``                   applied by the camera (smaller image), an exposure time that
+                                                                                        scales the signal, axes in um (pixel size) that follow the ROI
+                                                                                        and the binning. ``RoiStuff`` is the other way: the ROI is drawn
+                                                                                        in the viewer and the plugin crops after the grab
+Spectrometer, calibrated axis that      ``daq_1Dviewer_CookbookSpectrometer``,          A wavelength axis in nm asked to the instrument at every grab
+changes, actuator slave of a detector   ``daq_move_CookbookSpectrometer``,              because the grating moves it. The actuator (central wavelength)
+                                        ``hardware/spectrometer.py``                    and the detector share one instrument; a homing that waits for
+                                                                                        its end and calls ``move_done``
 ======================================  ==============================================  ================================================================
 
 Patterns already shown by the mock instruments of this package
@@ -222,8 +232,8 @@ Several axes on one controller          ``MockNamedAxes`` (actuator)            
 Actuator and detector on the same       ``MockTempController`` (actuator and 0D         A temperature controller with a PID loop: the actuator is
 controller                              detector)                                       the master, the detector is its slave
 2D camera                               ``BSCamera`` (2D detector),                     Pixel axes, live acquisition, ROI selection done on the
-                                        ``RoiStuff``                                    viewer (``roi_select`` with ``RoiInfo``). Not shown: binning
-                                                                                        and exposure time of a camera
+                                        ``RoiStuff``                                    viewer (``roi_select`` with ``RoiInfo``). The hardware ROI and
+                                                                                        binning are in the cookbook above
 1D spectrometer with a calibrated axis  ``Mock_spectro`` (1D detector)                  A wavelength axis in nm that follows the laser line setting,
                                                                                         and an exposure time that scales the signal
 Simulated device, no hardware           every plugin of this package                    A pure python controller behind a small wrapper class in
