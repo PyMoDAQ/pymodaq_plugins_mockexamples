@@ -32,4 +32,3 @@ def copy_experiments(config: Config) -> list[Path]:
             shutil.copyfile(source, target)
             copied.append(target)
     return copied
-
