@@ -42,7 +42,6 @@ Actuators
 
 * **BSPiezoMirror** (`beam steering`_): simulates a piezo mirror (X and Y tilt); shows a controller shared with four other modules.
 * **BSPowerMeter** (`beam steering`_): simulates the power (W) of the steered beam; shows an axis of the shared beam steering controller.
-* **MockCamera** (`mock camera`_): simulates X, Y and Theta axes moving a camera image; shows axes sharing a controller with a detector.
 * **MockHeater** (`heater`_): simulates a heating power (W); shows a closed loop for the PID extension.
 * **MockTempController** (`temperature controller`_): simulates a temperature controller (Temperature and Power axes); shows a master actuator with a slave detector.
 * **MockRandom** (`gaussian scan`_): simulates the position of a noisy Gaussian; shows an actuator and detectors sharing a controller ID.
@@ -78,9 +77,8 @@ Viewer1D
 Viewer2D
 ++++++++
 
-* **BSCamera** (`beam steering`_): simulates a camera imaging a laser spot; shows a live acquisition on a shared controller.
-* **MockCamera** (`mock camera`_): simulates a camera generating various images; shows live mode, several data, X, Y and Theta actuators.
-* **RoiStuff** (`mock camera`_): simulates the mock camera cropped to a ROI; shows roi_select receiving the ROI from the viewer.
+* **BSCamera** (`beam steering`_): simulates a camera imaging a laser spot, with fringes and drift; shows live acquisition, several data and a shared controller.
+* **RoiStuff** (`beam steering`_): simulates the beam steering camera cropped to a ROI; shows roi_select receiving the ROI from the viewer.
 
 ViewerND
 ++++++++
@@ -107,16 +105,9 @@ Dashboard of PyMoDAQ 5.3.
 
        **Beam steering with a piezo mirror**
 
-     - actuators *BSPiezoMirror*, *BSPowerMeter*; 0D *BSPhotodiode*; 2D *BSCamera*
-     - ``beam_steering_piezo.xml``
-     - One controller shared by five modules, moves that take time, a 2D and a 0D detector on the same beam
-   * - .. _mock camera:
-
-       **Beam steering on a camera image**
-
-     - actuators *MockCamera*; 2D *MockCamera*, *RoiStuff*
+     - actuators *BSPiezoMirror*, *BSPowerMeter*; 0D *BSPhotodiode*; 2D *BSCamera*, *RoiStuff*
      - ``beam_steering.xml``
-     - Axes moving a camera image, live acquisition, ROI selection; the PID model *PIDModelBeamSteering* uses its Xpiezo, Ypiezo and Camera
+     - One controller shared by five modules, moves that take time, a 2D and a 0D detector on the same beam; the PID model *PIDModelBeamSteering* uses its Xpiezo, Ypiezo and Camera
    * - .. _heater:
 
        **Heater and PID**
@@ -218,8 +209,8 @@ Several axes on one controller          ``MockNamedAxes`` (actuator)            
                                                                                         Axes have a name and an integer identifier
 Actuator and detector on the same       ``MockTempController`` (actuator and 0D         A temperature controller with a PID loop: the actuator is
 controller                              detector)                                       the master, the detector is its slave
-2D camera                               ``MockCamera``, ``BSCamera`` (2D                Pixel axes, live acquisition, ROI selection done on the
-                                        detectors), ``RoiStuff``                        viewer (``roi_select`` with ``RoiInfo``). Not shown: binning
+2D camera                               ``BSCamera`` (2D detector),                     Pixel axes, live acquisition, ROI selection done on the
+                                        ``RoiStuff``                                    viewer (``roi_select`` with ``RoiInfo``). Not shown: binning
                                                                                         and exposure time of a camera
 1D spectrometer with a calibrated axis  ``Mock_spectro`` (1D detector)                  A wavelength axis in nm that follows the laser line setting,
                                                                                         and an exposure time that scales the signal

@@ -8,7 +8,6 @@ from threading import Lock
 import numpy as np
 import pymodaq_utils.math_utils as mutils
 
-from pymodaq_plugins_mockexamples.hardware.camera_wrapper import Camera
 from pymodaq_plugins_mock.hardware.wrapper import ActuatorWrapperWithTauMultiAxes
 
 from pymodaq_utils.math_utils import gauss1D
@@ -43,11 +42,21 @@ class Camera:
     _angle = 0
     amp_noise = 1
     fringes = False
+    is_drifting = False
+    drift_x = 0.
+    drift_y = 0.
+    std_x = 0.
+    std_y = 0.
 
     def __init__(self):
         super().__init__()
         self._image: np.ndarray = None
+        self.drift = np.zeros(2)
         self.base_Mock_data()
+
+    def refresh_drift(self):
+        """Put the beam back where the actuators say it is"""
+        self.drift = np.zeros(2)
 
     @property
     def dx(self):
@@ -102,11 +111,16 @@ class Camera:
         return self._image
 
     def get_data(self, xpos, ypos) -> np.ndarray:
+        if self.is_drifting:
+            self.drift[0] += self.drift_x + self.std_x * np.random.randn()
+            self.drift[1] += self.drift_y + self.std_y * np.random.randn()
         image = self.amp * (
-            mutils.gauss2D(self.x_axis, self.x0 - xpos, self.dx,
-                           self.y_axis, self.y0 - ypos, self.dy,
+            mutils.gauss2D(self.x_axis, self.x0 - xpos - self.drift[0], self.dx,
+                           self.y_axis, self.y0 - ypos - self.drift[1], self.dy,
                            self.n,
                            self.angle))
+        if self.fringes:
+            image = image * np.sin((self.x_axis - self.drift[0]) / 4) ** 2
         # return np.roll(np.roll(self._image + self.amp_noise * np.random.rand(len(self.y_axis),
         #                                                                      len(self.x_axis)),
         #                        int(xpos), axis=1),
