@@ -17,7 +17,7 @@ from pymeasure.adapters import Adapter
 from pymeasure.instruments import Instrument, SCPIMixin
 from pymeasure.instruments.validators import strict_range
 
-from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockInstrument
+from pymodaq_plugins_mockexamples.hardware.mock_serial_visa_instrument import MockInstrument
 
 
 class CookbookSource(SCPIMixin, Instrument):

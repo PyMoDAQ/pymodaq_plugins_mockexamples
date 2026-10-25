@@ -5,7 +5,7 @@ import time
 import pytest
 from pymeasure.adapters import ProtocolAdapter
 
-from pymodaq_plugins_mockexamples.hardware.mock_instrument import (MockInstrument, MockSerialPort, MockVisaResource)
+from pymodaq_plugins_mockexamples.hardware.mock_serial_visa_instrument import (MockInstrument, MockSerialPort, MockVisaResource)
 from pymodaq_plugins_mockexamples.hardware.pymeasure_source import CookbookSource, MockAdapter
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage, SerialStageError
 from pymodaq_plugins_mockexamples.hardware.visa_meter import VisaMeter, VisaMeterError

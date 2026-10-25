@@ -12,7 +12,7 @@ from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, como
 from pymodaq.utils.data import DataFromPlugins
 from pymodaq_data import DataToExport
 
-from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockVisaResource
+from pymodaq_plugins_mockexamples.hardware.mock_serial_visa_instrument import MockVisaResource
 from pymodaq_plugins_mockexamples.hardware.visa_meter import VisaMeter
 
 

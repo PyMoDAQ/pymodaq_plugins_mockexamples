@@ -178,7 +178,7 @@ Cookbook of device patterns
 
 Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe is a pair
 (actuator and 0D detector) that runs without hardware: leave the port or the address to ``MOCK`` and the plugin talks
-to a simulated stage with a voltmeter (``hardware/mock_instrument.py``). Each file starts with a header telling what to
+to a simulated stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``). Each file starts with a header telling what to
 copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``)
 show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
