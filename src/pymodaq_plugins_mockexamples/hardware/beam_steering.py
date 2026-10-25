@@ -47,12 +47,57 @@ class Camera:
     drift_y = 0.
     std_x = 0.
     std_y = 0.
+    reference_exposure_ms = 100.  # the exposure at which the signal is ``amp``
 
     def __init__(self):
         super().__init__()
         self._image: np.ndarray = None
         self.drift = np.zeros(2)
+        self.pixel_size = 5.5  # um, of one pixel of the sensor
+        self.exposure_ms = self.reference_exposure_ms
+        self._binning = 1
+        self._roi = (0, 0, self.Nx, self.Ny)  # x, y, width, height on the sensor, in pixels
         self.base_Mock_data()
+
+    @property
+    def binning(self) -> int:
+        """Number of sensor pixels summed in each direction to make one pixel of the image"""
+        return self._binning
+
+    @binning.setter
+    def binning(self, binning: int):
+        self._binning = max(1, int(binning))
+
+    @property
+    def roi(self) -> tuple:
+        """Region of the sensor that is read: x, y, width, height in sensor pixels"""
+        return self._roi
+
+    def set_roi(self, x: int, y: int, width: int, height: int):
+        """Set the region read from the sensor, kept inside the sensor and at least one binned pixel wide"""
+        x = min(max(int(x), 0), self.Nx - 1)
+        y = min(max(int(y), 0), self.Ny - 1)
+        width = min(max(int(width), 1), self.Nx - x)
+        height = min(max(int(height), 1), self.Ny - y)
+        self._roi = (x, y, width, height)
+
+    @property
+    def shape(self) -> tuple:
+        """Shape (rows, columns) of the images: the ROI divided by the binning (incomplete pixels are dropped)"""
+        _, _, width, height = self._roi
+        return max(height // self._binning, 1), max(width // self._binning, 1)
+
+    def get_axes(self) -> tuple:
+        """Positions of the centre of the image pixels along x and y, in um (the sensor pixel i is at i * pixel_size)
+
+        They follow the ROI and the binning: the same sensor feature keeps the same position whatever they are.
+        """
+        x, y, _, _ = self._roi
+        rows, columns = self.shape
+        pitch = self._binning * self.pixel_size
+        half = (self._binning - 1) / 2
+        return ((x + half) * self.pixel_size + pitch * np.arange(columns),
+                (y + half) * self.pixel_size + pitch * np.arange(rows))
 
     def refresh_drift(self):
         """Put the beam back where the actuators say it is"""
@@ -111,6 +156,11 @@ class Camera:
         return self._image
 
     def get_data(self, xpos, ypos) -> np.ndarray:
+        """The image given by the camera: the ROI of the sensor, binned and scaled by the exposure"""
+        return self._read_out(self.get_sensor_image(xpos, ypos))
+
+    def get_sensor_image(self, xpos, ypos) -> np.ndarray:
+        """The beam on the whole sensor, whatever the ROI, the binning and the exposure"""
         if self.is_drifting:
             self.drift[0] += self.drift_x + self.std_x * np.random.randn()
             self.drift[1] += self.drift_y + self.std_y * np.random.randn()
@@ -121,12 +171,16 @@ class Camera:
                            self.angle))
         if self.fringes:
             image = image * np.sin((self.x_axis - self.drift[0]) / 4) ** 2
-        # return np.roll(np.roll(self._image + self.amp_noise * np.random.rand(len(self.y_axis),
-        #                                                                      len(self.x_axis)),
-        #                        int(xpos), axis=1),
-        #                int(ypos), axis=0)
         return image
 
+    def _read_out(self, image: np.ndarray) -> np.ndarray:
+        """What the camera gives: the ROI of the sensor, binned (summed) and scaled by the exposure"""
+        x, y, _, _ = self._roi
+        rows, columns = self.shape
+        b = self._binning
+        image = image[y:y + rows * b, x:x + columns * b]
+        image = image.reshape(rows, b, columns, b).sum(axis=(1, 3))
+        return image * self.exposure_ms / self.reference_exposure_ms
 
 
 class BeamSteering:
@@ -204,8 +258,8 @@ class BeamSteering:
             self._called_first = True
         lock.release_lock()
         return (np.mean(
-            self.camera.get_data(self.actuators.get_value('X'),
-                                 self.actuators.get_value('Y')))
+            self.camera.get_sensor_image(self.actuators.get_value('X'),
+                                         self.actuators.get_value('Y')))
                 * self._noise)
 
     def power_law(self, power_in: float) -> float:

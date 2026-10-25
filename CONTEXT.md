@@ -13,5 +13,14 @@ A set of mock instruments that simulate one experiment together (beam steering, 
 setup has an experiment file in `resources/`.
 
 **Recipe**:
-A cookbook example of a device pattern: an actuator and a 0D detector, with their driver in `hardware/`, that run
-on a mock device and are meant to be copied and adapted.
+A cookbook example of a device pattern: plugins (an actuator and a detector, 0D or 1D) with their driver in
+`hardware/`, that run on a mock device and are meant to be copied and adapted. The camera recipe is the exception: it
+is an existing mock plugin (`BSCamera`) completed to show the pattern.
+
+**Hardware ROI**:
+The region of the sensor read and binned by the camera itself, in sensor pixels; the image is smaller. Opposed to the
+*software ROI* drawn in the viewer and applied by the plugin after the grab (`RoiStuff`).
+
+**Calibrated axis**:
+The axis sent with the data of a detector, in physical units (um, nm), as the instrument gives it. It can change
+between two grabs (ROI, binning, central wavelength), so it is asked at every grab.
