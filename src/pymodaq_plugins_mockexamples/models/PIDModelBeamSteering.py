@@ -100,4 +100,4 @@ class PIDModelBeamSteering(PIDModelGeneric):
 
 
 if __name__ == "__main__":
-    main("beam_steering_mock")
+    main("beam_steering")
