@@ -178,9 +178,10 @@ Cookbook of device patterns
 
 Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe is a pair
 (actuator and 0D detector) that runs without hardware: leave the port or the address to ``MOCK`` and the plugin talks
-to a simulated stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``). Each file starts with a header telling what to
-copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``)
-show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
+to a simulated device: a stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``) or a 3-axis controller
+behind a library (``hardware/mock_dll_controller.py``). Each file starts with a header telling what to
+copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``,
+``tests/test_cookbook_dll.py``) show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
 Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
 initialized is the master and creates it, the other is the slave and receives it.
@@ -198,6 +199,16 @@ driver written directly                 ``daq_0Dviewer_CookbookSerial``,        
 VISA / SCPI, driver written directly    ``daq_move_CookbookVisa``,                      The same on a ``pyvisa`` resource: explicit terminations and
                                         ``daq_0Dviewer_CookbookVisa``,                  timeout, ``query`` versus ``write``
                                         ``hardware/visa_meter.py``
+Vendor DLL, multi-axis controller,      ``daq_move_CookbookDll`` (3 axes),              A ``ctypes`` driver: ``argtypes``, ``restype``, opaque handle,
+``ctypes``                              ``daq_0Dviewer_CookbookDll``,                   ``byref``, a structure, error codes, a ``CFUNCTYPE`` callback
+                                        ``hardware/dll_controller.py``                  kept alive. The library is simulated by an object that behaves
+                                                                                        like a ``CDLL``. The end of a move is reported by a callback
+                                                                                        from a thread of the library, turned into a Qt signal. Axes
+                                                                                        share one handle (master and slaves)
+Loading a native library                ``hardware/native_library.py``,                 ``load_library``: names per platform, path from a setting or an
+                                        ``hardware/system_library_demo.py``             environment variable, an error that lists what was tried. Real
+                                                                                        calls to the C library of the system (``strlen``, ``frexp``,
+                                                                                        ``qsort`` with a callback)
 ======================================  ==============================================  ================================================================
 
 Patterns already shown by the mock instruments of this package
@@ -219,7 +230,8 @@ Simulated device, no hardware           every plugin of this package            
                                                                                         ``hardware/``: the plugins run on it, no hardware needed
 ======================================  ==============================================  ================================================================
 
-Patterns not yet covered: an instrument driven by a vendor DLL or SDK (``ctypes`` or a Python binding).
+Patterns not yet covered: an instrument driven by a Python binding of the manufacturer (it is packaged like the
+drivers of ``hardware/``: a class that wraps the binding, created by ``ini_stage``).
 
 
 PID Models
