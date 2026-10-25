@@ -5,6 +5,8 @@ the same controller ID as the actuator ``CookbookSerial`` it is a slave and shar
 device with several functions (here a stage and a voltmeter) is split in several plugins.
 ADAPT: ``params``, ``ini_detector``, and the acquisition in ``grab_data`` (name, labels and units of the data).
 KEEP: the master/slave handling in ``ini_detector`` and ``close``, and the units given to the data.
+ERRORS: ``@report_errors`` shows the error of the driver in the status bar of the module, as PyMoDAQ only logs an
+exception raised by a plugin method; keep it on the methods that call the driver.
 """
 import numpy as np
 
@@ -14,6 +16,7 @@ from pymodaq_data import DataToExport
 
 from pymodaq_plugins_mockexamples.hardware.mock_serial_visa_instrument import MockSerialPort
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage
+from pymodaq_plugins_mockexamples.utils import report_errors
 
 
 class DAQ_0DViewer_CookbookSerial(DAQ_Viewer_base):
@@ -39,6 +42,7 @@ class DAQ_0DViewer_CookbookSerial(DAQ_Viewer_base):
         if self.is_master and self.controller is not None:
             self.controller.close()
 
+    @report_errors
     def grab_data(self, Naverage=1, **kwargs):
         voltage = np.mean([self.controller.read_voltage() for _ in range(Naverage)])
         self.dte_signal.emit(DataToExport(

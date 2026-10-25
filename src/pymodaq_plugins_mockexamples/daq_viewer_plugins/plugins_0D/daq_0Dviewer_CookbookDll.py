@@ -5,6 +5,8 @@ library handle. Alone it opens its own controller (master); with the same contro
 ``CookbookDll`` it is a slave and shares their handle: a library handle must be opened once, not once per plugin.
 ADAPT: ``params``, ``ini_detector``, and the acquisition in ``grab_data`` (name, labels and units of the data).
 KEEP: the master/slave handling in ``ini_detector`` and ``close``, and the units given to the data.
+ERRORS: ``@report_errors`` shows the error of the driver in the status bar of the module, as PyMoDAQ only logs an
+exception raised by a plugin method; keep it on the methods that call the driver.
 """
 import numpy as np
 
@@ -13,6 +15,7 @@ from pymodaq.utils.data import DataFromPlugins
 from pymodaq_data import DataToExport
 
 from pymodaq_plugins_mockexamples.hardware.dll_controller import MotionController, open_controller
+from pymodaq_plugins_mockexamples.utils import report_errors
 
 
 class DAQ_0DViewer_CookbookDll(DAQ_Viewer_base):
@@ -39,6 +42,7 @@ class DAQ_0DViewer_CookbookDll(DAQ_Viewer_base):
         if self.is_master and self.controller is not None:
             self.controller.close()
 
+    @report_errors
     def grab_data(self, Naverage=1, **kwargs):
         positions = [np.array([self.controller.position(axis)]) for axis in range(self.controller.n_axes)]
         self.dte_signal.emit(DataToExport(

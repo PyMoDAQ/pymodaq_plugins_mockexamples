@@ -6,6 +6,8 @@ axis name and epsilon, and the driver calls of ``move_abs``, ``move_rel``, ``get
 ``stop_motion``.
 KEEP: the structure of the methods, the master/slave handling in ``ini_stage`` and ``close``, and the call of
 ``move_done`` at the end of ``move_home``.
+ERRORS: ``@report_errors`` shows the error of the driver in the status bar of the module, as PyMoDAQ only logs an
+exception raised by a plugin method; keep it on the methods that call the driver.
 
 Try it without hardware: leave the port to ``MOCK``, the stage is then the simulated device of
 ``hardware/mock_serial_visa_instrument.py``. Give the same controller ID in the Dashboard to this actuator and to the detector
@@ -17,6 +19,7 @@ from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_p
 
 from pymodaq_plugins_mockexamples.hardware.mock_serial_visa_instrument import MockSerialPort
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage
+from pymodaq_plugins_mockexamples.utils import report_errors
 
 
 class DAQ_Move_CookbookSerial(DAQ_Move_base):
@@ -51,22 +54,26 @@ class DAQ_Move_CookbookSerial(DAQ_Move_base):
         position = DataActuator(data=self.controller.position, units=self.axis_unit)
         return self.get_position_with_scaling(position)
 
+    @report_errors
     def move_abs(self, value: DataActuator):
         value = self.check_bound(value)
         self.target_value = value
         value = self.set_position_with_scaling(value)
         self.controller.move_to(value.value(self.axis_unit))
 
+    @report_errors
     def move_rel(self, value: DataActuator):
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
         value = self.set_position_with_scaling(self.target_value)
         self.controller.move_to(value.value(self.axis_unit))
 
+    @report_errors
     def move_home(self):
         self.controller.home()
         self.move_done()  # the homing is blocking here, and PyMoDAQ does not poll the position after a home
 
+    @report_errors
     def stop_motion(self):
         self.controller.stop()
 

@@ -13,6 +13,8 @@ KEEP:
   from the library thread;
 - ``user_condition_to_reach_target``: PyMoDAQ polls the position until it is within epsilon of the target, and also
   waits for the end-of-move event. The homing is not polled, so ``move_done`` is called when its event arrives.
+ERRORS: ``@report_errors`` shows the error of the driver in the status bar of the module, as PyMoDAQ only logs an
+exception raised by a plugin method; keep it on the methods that call the driver.
 
 Try it without the DLL: leave the port to ``MOCK``, the library is then the simulated one of
 ``hardware/mock_dll_controller.py``. See ``hardware/dll_controller.py`` for the ``ctypes`` driver and
@@ -26,6 +28,7 @@ from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_p
 from pymodaq_plugins_mockexamples.hardware.dll_controller import MotionController, open_controller
 from pymodaq_plugins_mockexamples.hardware.mock_dll_controller import (EVENT_MOVE_DONE, EVENT_STOPPED,
                                                                        EVENT_HOME_DONE)
+from pymodaq_plugins_mockexamples.utils import report_errors
 
 
 class DAQ_Move_CookbookDll(DAQ_Move_base):
@@ -87,6 +90,7 @@ class DAQ_Move_CookbookDll(DAQ_Move_base):
         position = DataActuator(data=self.controller.position(self.axis_value), units=self.axis_unit)
         return self.get_position_with_scaling(position)
 
+    @report_errors
     def move_abs(self, value: DataActuator):
         value = self.check_bound(value)
         self.target_value = value
@@ -94,6 +98,7 @@ class DAQ_Move_CookbookDll(DAQ_Move_base):
         self._move_finished = False
         self.controller.move_abs(self.axis_value, value.value(self.axis_unit))
 
+    @report_errors
     def move_rel(self, value: DataActuator):
         value = self.check_bound(self.current_value + value) - self.current_value
         self.target_value = value + self.current_value
@@ -101,10 +106,12 @@ class DAQ_Move_CookbookDll(DAQ_Move_base):
         self._move_finished = False
         self.controller.move_abs(self.axis_value, value.value(self.axis_unit))
 
+    @report_errors
     def move_home(self):
         self._homing = True
         self.controller.home(self.axis_value)
 
+    @report_errors
     def stop_motion(self):
         self.controller.stop(self.axis_value)
 
