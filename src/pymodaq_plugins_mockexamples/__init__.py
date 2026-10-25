@@ -2,10 +2,11 @@ from pathlib import Path
 from pymodaq_utils.logger import set_logger  # to be imported by other modules.
 
 from pymodaq_utils.utils import get_version, PackageNotFoundError
-from .utils import Config
+from .utils import Config, copy_experiments
 
 
 config = Config()
+copy_experiments(config)
 try:
     __version__ = get_version(__package__)
 except PackageNotFoundError:

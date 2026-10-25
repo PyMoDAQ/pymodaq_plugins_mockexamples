@@ -24,7 +24,18 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
         {'title': 'Gaussian-ness', 'name': 'index_n', 'type': 'int', 'value': 1, },
         {'title': 'Power noise', 'name': 'power_noise', 'type': 'float', 'value': 10.,
          'tip': 'The lower the value, the higher the noise'},
-
+        {'title': 'Fringes?', 'name': 'fringes', 'type': 'bool', 'value': False},
+        {'title': 'Drift', 'name': 'is_drifting', 'type': 'bool', 'value': False, 'children': [
+            {'title': 'drift_x', 'name': 'drift_x', 'type': 'float', 'value': 0.,
+             'tip': 'Pixels added to the beam position at each grab'},
+            {'title': 'drift_y', 'name': 'drift_y', 'type': 'float', 'value': 0.},
+            {'title': 'std_x', 'name': 'std_x', 'type': 'float', 'value': 0.,
+             'tip': 'Standard deviation of the random walk of the beam position'},
+            {'title': 'std_y', 'name': 'std_y', 'type': 'float', 'value': 0.},
+        ]},
+        {'title': 'Nimages colors:', 'name': 'Nimagescolor', 'type': 'int', 'value': 1, 'min': 1, 'max': 3},
+        {'title': 'Nimages pannels:', 'name': 'Nimagespannel', 'type': 'int', 'value': 1, 'min': 1},
+        {'title': 'Threshold', 'name': 'threshold', 'type': 'float', 'value': 0., 'min': 0},
     ]
 
     def ini_attributes(self):
@@ -44,12 +55,19 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
             self.controller.camera.n = param.value()
         elif param.name() == 'power_noise':
             self.controller.power_noise_fraction = param.value()
+        elif param.name() in ('fringes', 'is_drifting', 'drift_x', 'drift_y', 'std_x', 'std_y'):
+            setattr(self.controller.camera, param.name(), param.value())
+            if param.name() == 'is_drifting':
+                self.controller.camera.refresh_drift()
 
     def ini_detector(self, controller=None):
         if self.is_master:
             self.controller = BeamSteering()
         else:
             self.controller = controller
+        for name in ('size_x', 'size_y', 'angle', 'index_n', 'power_noise', 'fringes', 'is_drifting', 'drift_x',
+                     'drift_y', 'std_x', 'std_y'):  # apply the settings loaded from a preset
+            self.commit_settings(self.settings.child(*self._path(name)))
         self.emit_status(ThreadCommand('update_main_settings',
                                        [['wait_time'], self.settings['wait_time'], 'value']))
 
@@ -59,6 +77,10 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
         initialized = True
         info = 'Controller ok'
         return info, initialized
+
+    @staticmethod
+    def _path(name: str):
+        return ('is_drifting', name) if name.endswith(('_x', '_y')) and name.startswith(('drift', 'std')) else (name,)
 
     def close(self):
         pass
@@ -96,10 +118,15 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
             data_tmp += self.controller.get_camera_data()
         data_tmp = data_tmp / Naverage
 
-        dwa = DataFromPlugins(name='BSCamera', data=[data_tmp],
-                              axes=[self.x_axis, self.y_axis])
+        data_tmp = data_tmp * (data_tmp >= self.settings['threshold'])
+        data = []
+        for ind in range(self.settings['Nimagespannel']):
+            data.append(DataFromPlugins(
+                name=f'BSCamera_{ind:d}',
+                data=[(indcolor + 1) * data_tmp for indcolor in range(self.settings['Nimagescolor'])],
+                dim='Data2D', axes=[self.x_axis, self.y_axis]))
 
-        return DataToExport('BSCamera', data=[dwa])
+        return DataToExport('BSCamera', data=data)
 
     def stop(self):
         """

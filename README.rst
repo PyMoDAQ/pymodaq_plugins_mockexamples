@@ -30,65 +30,196 @@ Authors
 Instruments
 ===========
 
-Below is the list of instruments included in this plugin
+Below is the list of the instruments included in this plugin: what each one *simulates*, then what it shows of
+PyMoDAQ. The link in brackets leads to the simulated setup it belongs to, described in "Simulated setups"
+with the instruments to use together and the experiment files to load.
+
+.. Keep every instrument on one short line starting with an asterisk and a bold name: the plugin manager of
+   PyMoDAQ lists only that first line, and looks for the five titles below.
 
 Actuators
 +++++++++
 
-* **MockCamera**: set of X, Y or theta actuators moving a light image on the corresponding camera instrument. To
-  be used with the 2D detector **MockCamera**.  An experiment file called **beam_steering.xml** is available in the
-  resources folder to be copied in the .pymodaq/experiments folder to orchestrate such a simulated beam steering
-  experiment.
-* **MockNamedAxes**: Show examples of multi axis actuator controller specifying both a name and an integer ID
-* **MockRandom** actuator to be used with the corresponding 0D detector. If they share the same ID in the preset then
-  this actuator can be moved in the [0-20] range (even randomly) to retrieve a noisy gaussian
-* **MockTauMulti**: controller with multiple axes and showing how to add a characteristic time (to mimic real
-  instruments)
-* **MockHeater**: actuator simulating the heating of something (in Watt). To be used with the mockHeater 0D detector.
-  An experiment file called **Heater.xml** is available in the resources folder to
-  be copied in the .pymodaq/experiments folder to orchestrate such a simulated experiment. Can be used to test the
-  PID extension.
-* **MockTempController** simulation of a temperature controller with inner PID stabilization loop possibilities or
-  manual power control. Has two axes: *Temperature* for the PID setpoint (if PID enabled) and *Power* for manual power
-  controller if PID disabled. An experiment file called **TempController.xml** is available in the resources folder to
-  be copied in the .pymodaq/experiments folder to orchestrate such a simulated experiment.
+* **BSPiezoMirror** (`beam steering`_): simulates a piezo mirror (X and Y tilt); shows a controller shared with four other modules.
+* **BSPowerMeter** (`beam steering`_): simulates the power (W) of the steered beam; shows an axis of the shared beam steering controller.
+* **MockHeater** (`heater`_): simulates a heating power (W); shows a closed loop for the PID extension.
+* **MockTempController** (`temperature controller`_): simulates a temperature controller (Temperature and Power axes); shows a master actuator with a slave detector.
+* **MockRandom** (`gaussian scan`_): simulates the position of a noisy Gaussian; shows an actuator and detectors sharing a controller ID.
+* **Harmonics** (`harmonics`_): simulates the power (W) of a harmonics source; shows units from pint quantities.
+* **MockComplexSignal** (`complex signal`_): simulates X and Y axes over a 2D signal; shows axes given as a name to ID dictionary.
+* **MockNamedAxes** (`actuator interfaces`_): simulates a three-axis controller; shows axes with a name and an integer ID.
+* **MockBinary** (`actuator interfaces`_): simulates a two-state device (0 or 1); shows the binary actuator interface.
+* **MockRelative** (`actuator interfaces`_): simulates a stage moved relatively only; shows the relative actuator interface.
+* **BSPiezoMirrorRunTimeError** (`error tests`_): simulates the piezo mirror failing when read; shows how an error in get_actuator_value is handled.
+* **BSPiezoMirrorTimeout** (`error tests`_): simulates the piezo mirror timing out at initialization; shows how an initialization timeout is handled.
+* **BSPiezoMirrorUninitializing** (`error tests`_): simulates the piezo mirror failing at initialization; shows how a failed initialization is handled.
 
 Viewer0D
 ++++++++
 
-* **MockAdaptive**: to be used to show how a detector can be used for adaptive samplking (not working yet with PyMoDAQ4)
-* **MockRandom**: generate a value of a noisy gaussian given the current value of the underlying mock controller.
-  To be used with the MockRandom actuator. If they share the same ID in the preset then this actuator can be moved in
-  the [0-20] range (even randomly) to retrieve a noisy gaussian
-* **MockHeater**: detector simulating the temperature measurement of something. To be used with the mockHeater actuator
-* **MockTempController** simulation of a temperature controller (should be slave of the MockTempController master
-  actuator). Probe both the instantaneous temperature and the current applied power
+* **BSPhotodiode** (`beam steering`_): simulates a photodiode on the steered beam; shows a 0D detector on a shared controller.
+* **MockHeater** (`heater`_): simulates the temperature of a heated object; shows a detector in a closed loop.
+* **MockTempController** (`temperature controller`_): simulates the temperature and power of the controller; shows a slave detector receiving its controller.
+* **MockRandom** (`gaussian scan`_): simulates a noisy Gaussian read at the actuator position; shows a detector coupled to an actuator by ID.
+* **Harmonics** (`harmonics`_): simulates the power of the harmonics source; shows data with pint units.
+* **MockComplexSignal** (`complex signal`_): simulates a signal read at the actuators position; shows scans in one or two dimensions.
+* **MockAdaptive** (`complex signal`_): simulates a signal at requested positions; shows the positions argument of an adaptive scan.
+* **MockErrors** (`error tests`_): simulates a 0D value with its standard deviation; shows data with errors from hardware averaging.
 
 Viewer1D
 ++++++++
 
-* **MockSpectro**: mimic data one coulf obtain from a spectrometer. Specific methods are also added to seemlessly use
-  this detector with the Spectrometer extension (not yet working with PyMoDAQ4)
-* **MockRandom**: Generate a noisy Gaussian with a spread axis (to illustrate the sorting button action of the Viewer1D
-  data viewer
-* **Pinem**: Generate Photon-Induced Near-field Electron Microscopy spectra. It is Electron energy loss spectroscopy
-  from the interaction of a near-field (could be induced by a laser on a sample) and probed by the electronic beam.
-  The coupling between the near-field and the electronic beam can be tuned using various parameters (g1, g2, theta)...
-
+* **MockRandom** (`gaussian scan`_): simulates a shuffled Gaussian; shows the sort button of the 1D viewer.
+* **Harmonics** (`harmonics`_): simulates the harmonics spectrum of the source; shows pint units and roi_select.
+* **Mock_spectro** (`spectrometer`_): simulates a spectrometer with laser line and exposure; shows a calibrated wavelength axis (nm).
+* **MockSpectroErrors** (`error tests`_): simulates the spectrometer averaged over 10 acquisitions; shows data with errors from averaging.
 
 Viewer2D
 ++++++++
 
-* **MockCamera**: if connected with a preset with the MockCamera actuator (or a few of them, X, Y and thera), then the
-  image displayed on screen is moved or rotated accordingly to the actuators value. Perfect for a beamsteering example
-* **RoiStuff**: example of ROI exporting into the instrument plugin. Not yet working, planned to be ok for the future
-  >= 4.2.* releases.
-
+* **BSCamera** (`beam steering`_): simulates a camera imaging a laser spot, with fringes and drift; shows live acquisition, several data and a shared controller.
+* **RoiStuff** (`beam steering`_): simulates the beam steering camera cropped to a ROI; shows roi_select receiving the ROI from the viewer.
 
 ViewerND
 ++++++++
 
-* **MockEvents**: Simulate the acquisition of photons received on a timepix camera (position and time of arrival of each photon)
+* **MockEvents** (`photon events`_): simulates a photon counting camera replaying a recording; shows N-dimensional data from an acquisition thread.
+
+Simulated setups
+================
+
+The instruments above grouped by what they simulate (the links of the lists lead to the rows of this table).
+Instruments of a setup that share a controller must have the same *controller ID* in the Dashboard. The
+experiment files (``resources/*.xml``) are copied in the ``.pymodaq/experiments`` folder the first time the package
+is imported (a file already there is never overwritten; set ``copy_experiments = false`` in the configuration of the
+plugin to stop it), they load in the Dashboard of PyMoDAQ 5.3.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 33 17 28
+
+   * - Setup
+     - Instruments
+     - Experiment file
+     - What it shows
+   * - .. _beam steering:
+
+       **Beam steering with a piezo mirror**
+
+     - actuators *BSPiezoMirror*, *BSPowerMeter*; 0D *BSPhotodiode*; 2D *BSCamera*, *RoiStuff*
+     - ``beam_steering.xml``
+     - One controller shared by five modules, moves that take time, a 2D and a 0D detector on the same beam; the PID model *PIDModelBeamSteering* uses its Xpiezo, Ypiezo and Camera
+   * - .. _heater:
+
+       **Heater and PID**
+
+     - actuators *MockHeater*; 0D *MockHeater*
+     - ``Heater.xml``
+     - A closed loop for the PID extension
+   * - .. _temperature controller:
+
+       **Temperature controller with a PID loop**
+
+     - actuators *MockTempController*; 0D *MockTempController*
+     - ``TempController.xml``
+     - A master actuator and a slave detector on one controller
+   * - .. _gaussian scan:
+
+       **Scanning a known signal**
+
+     - actuators *MockRandom*; 0D *MockRandom*; 1D *MockRandom*
+     - none
+     - Scans of a noisy Gaussian, the sort button of the 1D viewer
+   * - .. _harmonics:
+
+       **Harmonics source**
+
+     - actuators *Harmonics*; 0D *Harmonics*; 1D *Harmonics*
+     - none
+     - Physical units from ``pint`` quantities
+   * - .. _complex signal:
+
+       **Complex signal and adaptive scan**
+
+     - actuators *MockComplexSignal*; 0D *MockComplexSignal*, *MockAdaptive*
+     - none
+     - Scans in one or two dimensions, the ``positions`` argument of an adaptive scan
+   * - .. _spectrometer:
+
+       **Spectrometer with a calibrated axis**
+
+     - 1D *Mock_spectro*
+     - none
+     - A wavelength axis that follows a setting, data with errors
+   * - .. _actuator interfaces:
+
+       **Multi-axis and user interface examples**
+
+     - actuators *MockNamedAxes*, *MockBinary*, *MockRelative*
+     - none
+     - Named axes on one controller, binary and relative user interfaces
+   * - .. _photon events:
+
+       **Photon counting camera**
+
+     - ND *MockEvents*
+     - none
+     - N-dimensional data, an acquisition thread with Qt callbacks, temporary data
+   * - .. _error tests:
+
+       **Error handling**
+
+     - actuators *BSPiezoMirrorRunTimeError*, *BSPiezoMirrorTimeout*, *BSPiezoMirrorUninitializing*; 0D *MockErrors*; 1D *MockSpectroErrors*
+     - none
+     - Errors on reading and on initialization, data carrying errors
+
+Cookbook of device patterns
+===========================
+
+Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe is a pair
+(actuator and 0D detector) that runs without hardware: leave the port or the address to ``MOCK`` and the plugin talks
+to a simulated stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``). Each file starts with a header telling what to
+copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``)
+show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
+
+Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
+initialized is the master and creates it, the other is the slave and receives it.
+
+======================================  ==============================================  ================================================================
+Pattern                                 Files                                           What it shows
+======================================  ==============================================  ================================================================
+Text protocol, ``pymeasure`` driver     ``daq_move_CookbookPymeasure``,                 The recommended way: a few declarative lines (``control``,
+(recommended)                           ``daq_0Dviewer_CookbookPymeasure``,             ``measurement``, validators, error checking) in
+                                        ``hardware/pymeasure_source.py``                ``hardware/pymeasure_source.py``, tested with ``ProtocolAdapter``
+                                                                                        (exact commands) and with a simulated device
+Serial line (RS-232, USB-serial),       ``daq_move_CookbookSerial``,                    A driver written on ``pyserial``: terminations, timeouts treated
+driver written directly                 ``daq_0Dviewer_CookbookSerial``,                as errors, one lock for the shared driver, the error queue of the
+                                        ``hardware/serial_stage.py``                    device, a blocking homing ended by ``move_done``
+VISA / SCPI, driver written directly    ``daq_move_CookbookVisa``,                      The same on a ``pyvisa`` resource: explicit terminations and
+                                        ``daq_0Dviewer_CookbookVisa``,                  timeout, ``query`` versus ``write``
+                                        ``hardware/visa_meter.py``
+======================================  ==============================================  ================================================================
+
+Patterns already shown by the mock instruments of this package
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+======================================  ==============================================  ================================================================
+Pattern                                 Plugins                                         What they show
+======================================  ==============================================  ================================================================
+Several axes on one controller          ``MockNamedAxes`` (actuator)                    The master axis creates the controller, the others receive it.
+                                                                                        Axes have a name and an integer identifier
+Actuator and detector on the same       ``MockTempController`` (actuator and 0D         A temperature controller with a PID loop: the actuator is
+controller                              detector)                                       the master, the detector is its slave
+2D camera                               ``BSCamera`` (2D detector),                     Pixel axes, live acquisition, ROI selection done on the
+                                        ``RoiStuff``                                    viewer (``roi_select`` with ``RoiInfo``). Not shown: binning
+                                                                                        and exposure time of a camera
+1D spectrometer with a calibrated axis  ``Mock_spectro`` (1D detector)                  A wavelength axis in nm that follows the laser line setting,
+                                                                                        and an exposure time that scales the signal
+Simulated device, no hardware           every plugin of this package                    A pure python controller behind a small wrapper class in
+                                                                                        ``hardware/``: the plugins run on it, no hardware needed
+======================================  ==============================================  ================================================================
+
+Patterns not yet covered: an instrument driven by a vendor DLL or SDK (``ctypes`` or a Python binding).
 
 
 PID Models

@@ -8,14 +8,14 @@ from pymodaq_utils.logger import set_logger, get_module_name
 
 from pymodaq_gui.plotting.items.roi import RoiInfo
 from pymodaq_data.data import DataToExport, DataWithAxes, Axis
-from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_2D.daq_2Dviewer_MockCamera import DAQ_2DViewer_MockCamera
+from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_2D.daq_2Dviewer_BSCamera import DAQ_2DViewer_BSCamera
 
 logger = set_logger(get_module_name(__file__))
 
 
-class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
+class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_BSCamera):
     """ Generate 2D image that can be croped using the ROI select on the DAQViewer"""
-    params = DAQ_2DViewer_MockCamera.params + \
+    params = DAQ_2DViewer_BSCamera.params + \
              [{'title': 'Use Roi:', 'name': 'use_roi', 'type': 'bool'}]
 
     def ini_attributes(self):
@@ -28,9 +28,9 @@ class DAQ_2DViewer_RoiStuff(DAQ_2DViewer_MockCamera):
 
 
 
-        self.x_axis = Axis(size=self.controller.Nx, offset=23,
+        self.x_axis = Axis(size=self.controller.camera.Nx, offset=23,
                            scaling=0.5, label='scaled X', index=1)
-        self.y_axis = Axis(size=self.controller.Ny,
+        self.y_axis = Axis(size=self.controller.camera.Ny,
                            offset=-16,
                            scaling=2., label='scaled Y', index=0)
 
