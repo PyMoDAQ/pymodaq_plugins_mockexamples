@@ -27,6 +27,54 @@ Authors
 * Sebastien J. Weber  (sebastien.weber@cnrs.fr)
 
 
+Cookbook of device patterns
+===========================
+
+Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe is a pair
+(actuator and 0D detector) that runs without hardware: leave the port or the address to ``MOCK`` and the plugin talks
+to a simulated stage with a voltmeter (``hardware/fake_instrument.py``). Each file starts with a header telling what to
+copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``)
+show how to test a plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
+
+Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
+initialized is the master and creates it, the other is the slave and receives it.
+
+======================================  ==============================================  ================================================================
+Pattern                                 Files                                           What it shows
+======================================  ==============================================  ================================================================
+Text protocol, ``pymeasure`` driver     ``daq_move_CookbookPymeasure``,                 The recommended way: a few declarative lines (``control``,
+(recommended)                           ``daq_0Dviewer_CookbookPymeasure``,             ``measurement``, validators, error checking) in
+                                        ``hardware/pymeasure_source.py``                ``hardware/pymeasure_source.py``, tested with ``ProtocolAdapter``
+                                                                                        (exact commands) and with a simulated device
+Serial line (RS-232, USB-serial),       ``daq_move_CookbookSerial``,                    A driver written on ``pyserial``: terminations, timeouts treated
+driver written directly                 ``daq_0Dviewer_CookbookSerial``,                as errors, one lock for the shared driver, the error queue of the
+                                        ``hardware/serial_stage.py``                    device, a blocking homing ended by ``move_done``
+VISA / SCPI, driver written directly    ``daq_move_CookbookVisa``,                      The same on a ``pyvisa`` resource: explicit terminations and
+                                        ``daq_0Dviewer_CookbookVisa``,                  timeout, ``query`` versus ``write``
+                                        ``hardware/visa_meter.py``
+======================================  ==============================================  ================================================================
+
+Patterns already shown by the mock instruments of this package
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+======================================  ==============================================  ================================================================
+Pattern                                 Plugins                                         What they show
+======================================  ==============================================  ================================================================
+Several axes on one controller          ``MockNamedAxes`` (actuator)                    The master axis creates the controller, the others receive it.
+                                                                                        Axes have a name and an integer identifier
+Actuator and detector on the same       ``MockTempController`` (actuator and 0D         A temperature controller with a PID loop: the actuator is
+controller                              detector)                                       the master, the detector is its slave
+2D camera                               ``MockCamera``, ``BSCamera`` (2D                Pixel axes, live acquisition, ROI selection done on the
+                                        detectors), ``RoiStuff``                        viewer (``roi_select`` with ``RoiInfo``). Not shown: binning
+                                                                                        and exposure time of a camera
+1D spectrometer with a calibrated axis  ``Mock_spectro`` (1D detector)                  A wavelength axis in nm that follows the laser line setting,
+                                                                                        and an exposure time that scales the signal
+Simulated device, no hardware           every plugin of this package                    A pure python controller behind a small wrapper class in
+                                                                                        ``hardware/``: the plugins run on it, no hardware needed
+======================================  ==============================================  ================================================================
+
+Patterns not yet covered: an instrument driven by a vendor DLL or SDK (``ctypes`` or a Python binding).
+
 Instruments
 ===========
 
