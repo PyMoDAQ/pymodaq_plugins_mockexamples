@@ -8,14 +8,14 @@ KEEP: the structure of the methods, the master/slave handling in ``ini_stage`` a
 ``move_done`` at the end of ``move_home``.
 
 Try it without hardware: leave the port to ``MOCK``, the stage is then the simulated device of
-``hardware/fake_instrument.py``. Give the same controller ID in the Dashboard to this actuator and to the detector
+``hardware/mock_instrument.py``. Give the same controller ID in the Dashboard to this actuator and to the detector
 ``CookbookSerial`` to make them share the driver. See ``hardware/serial_stage.py`` for the driver and
 ``tests/test_cookbook_drivers.py`` and ``tests/test_cookbook_plugins.py`` for the tests.
 """
 from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_parameters_fun, DataActuatorType,
                                                           DataActuator, main)
 
-from pymodaq_plugins_mockexamples.hardware.fake_instrument import FakeSerialPort
+from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockSerialPort
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage
 
 
@@ -37,7 +37,7 @@ class DAQ_Move_CookbookSerial(DAQ_Move_base):
 
     def ini_stage(self, controller=None):
         if self.is_master:
-            port = FakeSerialPort() if self.settings['port'] == 'MOCK' else self.settings['port']
+            port = MockSerialPort() if self.settings['port'] == 'MOCK' else self.settings['port']
             self.controller = SerialStage(port, baudrate=self.settings['baudrate'])
         else:  # a master detector or actuator shares its controller
             self.controller = controller

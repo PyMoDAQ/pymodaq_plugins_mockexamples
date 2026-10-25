@@ -17,7 +17,7 @@ class VisaMeterError(Exception):
 
 
 class VisaMeter:
-    """Driver of the simulated stage and voltmeter of ``FakeInstrument`` through a VISA resource
+    """Driver of the simulated stage and voltmeter of ``MockInstrument`` through a VISA resource
 
     Parameters
     ----------

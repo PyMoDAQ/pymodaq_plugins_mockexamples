@@ -20,7 +20,7 @@ class SerialStageError(Exception):
 
 
 class SerialStage:
-    """Driver of the simulated stage and voltmeter of ``FakeInstrument`` through a serial line
+    """Driver of the simulated stage and voltmeter of ``MockInstrument`` through a serial line
 
     Parameters
     ----------

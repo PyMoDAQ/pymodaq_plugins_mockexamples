@@ -12,7 +12,7 @@ from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, como
 from pymodaq.utils.data import DataFromPlugins
 from pymodaq_data import DataToExport
 
-from pymodaq_plugins_mockexamples.hardware.fake_instrument import FakeSerialPort
+from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockSerialPort
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage
 
 
@@ -29,7 +29,7 @@ class DAQ_0DViewer_CookbookSerial(DAQ_Viewer_base):
 
     def ini_detector(self, controller=None):
         if self.is_master:
-            port = FakeSerialPort() if self.settings['port'] == 'MOCK' else self.settings['port']
+            port = MockSerialPort() if self.settings['port'] == 'MOCK' else self.settings['port']
             self.controller = SerialStage(port, baudrate=self.settings['baudrate'])
         else:  # a master actuator or detector shares its controller
             self.controller = controller

@@ -17,11 +17,11 @@ from pymeasure.adapters import Adapter
 from pymeasure.instruments import Instrument, SCPIMixin
 from pymeasure.instruments.validators import strict_range
 
-from pymodaq_plugins_mockexamples.hardware.fake_instrument import FakeInstrument
+from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockInstrument
 
 
 class CookbookSource(SCPIMixin, Instrument):
-    """pymeasure driver of the simulated stage and voltmeter of ``FakeInstrument``"""
+    """pymeasure driver of the simulated stage and voltmeter of ``MockInstrument``"""
 
     def __init__(self, adapter, name='Cookbook device', **kwargs):
         super().__init__(adapter, name, **kwargs)
@@ -43,17 +43,17 @@ class CookbookSource(SCPIMixin, Instrument):
 
 
 class MockAdapter(Adapter):
-    """A pymeasure adapter whose far end is a simulated ``FakeInstrument``
+    """A pymeasure adapter whose far end is a simulated ``MockInstrument``
 
     Parameters
     ----------
-    device: FakeInstrument, optional
+    device: MockInstrument, optional
         The simulated device, a new one by default
     """
 
-    def __init__(self, device: Optional[FakeInstrument] = None, **kwargs):
+    def __init__(self, device: Optional[MockInstrument] = None, **kwargs):
         super().__init__(**kwargs)
-        self.device = device if device is not None else FakeInstrument()
+        self.device = device if device is not None else MockInstrument()
         self._answers = []
 
     def _write(self, command, **kwargs):

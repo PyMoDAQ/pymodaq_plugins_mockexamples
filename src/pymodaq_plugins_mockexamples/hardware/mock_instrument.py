@@ -1,11 +1,11 @@
 """One pure python instrument, and the three transports used by the cookbook recipes to talk to it.
 
-``FakeInstrument`` stands for the firmware of a small stage with a voltmeter. It understands SCPI-like text commands,
+``MockInstrument`` stands for the firmware of a small stage with a voltmeter. It understands SCPI-like text commands,
 so the same simulated device is reached the three ways a real one would be:
 
-- ``FakeSerialPort``: bytes, like a ``serial.Serial`` object (recipe ``CookbookSerial``),
-- ``FakeVisaResource``: text, like a ``pyvisa`` resource (recipe ``CookbookVisa``),
-- ``FakeAdapter``: a ``pymeasure`` adapter (recipe ``CookbookPymeasure``, in ``pymeasure_source.py``).
+- ``MockSerialPort``: bytes, like a ``serial.Serial`` object (recipe ``CookbookSerial``),
+- ``MockVisaResource``: text, like a ``pyvisa`` resource (recipe ``CookbookVisa``),
+- ``MockAdapter``: a ``pymeasure`` adapter (recipe ``CookbookPymeasure``, in ``pymeasure_source.py``).
 
 None of them needs hardware nor a driver. In a plugin, the port name ``MOCK`` selects them.
 """
@@ -13,7 +13,7 @@ import time
 from typing import Optional
 
 
-class FakeInstrument:
+class MockInstrument:
     """Firmware of the simulated device
 
     Commands (case insensitive, mnemonics may be abbreviated or written in full: ``MEAS:VOLT?`` or
@@ -90,14 +90,14 @@ class FakeInstrument:
         return None
 
 
-class FakeSerialPort:
-    """The part of ``serial.Serial`` used by drivers, in front of a ``FakeInstrument``
+class MockSerialPort:
+    """The part of ``serial.Serial`` used by drivers, in front of a ``MockInstrument``
 
     Commands end with ``\\n`` (``\\r`` is ignored), answers end with ``\\r\\n``. An empty answer from ``readline`` means
     that the device did not answer before the timeout, as with the real class.
     """
-    def __init__(self, device: Optional[FakeInstrument] = None, timeout: float = 1.):
-        self.device = device if device is not None else FakeInstrument()
+    def __init__(self, device: Optional[MockInstrument] = None, timeout: float = 1.):
+        self.device = device if device is not None else MockInstrument()
         self.timeout = timeout
         self.is_open = True
         self._pending = b''
@@ -127,10 +127,10 @@ class FakeSerialPort:
         self.is_open = False
 
 
-class FakeVisaResource:
-    """The part of a ``pyvisa`` message based resource used by drivers, in front of a ``FakeInstrument``"""
-    def __init__(self, device: Optional[FakeInstrument] = None):
-        self.device = device if device is not None else FakeInstrument()
+class MockVisaResource:
+    """The part of a ``pyvisa`` message based resource used by drivers, in front of a ``MockInstrument``"""
+    def __init__(self, device: Optional[MockInstrument] = None):
+        self.device = device if device is not None else MockInstrument()
         self.timeout = 1000  # ms, as in pyvisa
         self.read_termination = '\n'
         self.write_termination = '\n'

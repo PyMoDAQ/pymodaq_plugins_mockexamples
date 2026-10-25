@@ -5,7 +5,7 @@ import time
 import pytest
 from pymeasure.adapters import ProtocolAdapter
 
-from pymodaq_plugins_mockexamples.hardware.fake_instrument import (FakeInstrument, FakeSerialPort, FakeVisaResource)
+from pymodaq_plugins_mockexamples.hardware.mock_instrument import (MockInstrument, MockSerialPort, MockVisaResource)
 from pymodaq_plugins_mockexamples.hardware.pymeasure_source import CookbookSource, MockAdapter
 from pymodaq_plugins_mockexamples.hardware.serial_stage import SerialStage, SerialStageError
 from pymodaq_plugins_mockexamples.hardware.visa_meter import VisaMeter, VisaMeterError
@@ -14,11 +14,11 @@ from pymodaq_plugins_mockexamples.hardware.visa_meter import VisaMeter, VisaMete
 @pytest.fixture(params=['serial', 'visa'])
 def direct_driver(request):
     """The two drivers written directly on a port have the same public methods: the same tests apply"""
-    device = FakeInstrument(speed=1000.)
+    device = MockInstrument(speed=1000.)
     if request.param == 'serial':
-        driver = SerialStage(FakeSerialPort(device))
+        driver = SerialStage(MockSerialPort(device))
     else:
-        driver = VisaMeter(FakeVisaResource(device))
+        driver = VisaMeter(MockVisaResource(device))
     yield driver, device
     driver.close()
 
@@ -26,7 +26,7 @@ def direct_driver(request):
 class TestDirectDrivers:
     def test_identity(self, direct_driver):
         driver, _ = direct_driver
-        assert driver.identity() == FakeInstrument.IDN
+        assert driver.identity() == MockInstrument.IDN
 
     def test_move_and_read_back(self, direct_driver):
         driver, _ = direct_driver
@@ -66,15 +66,15 @@ class TestDirectDrivers:
 
 
 def test_serial_no_answer_is_a_timeout_error():
-    port = FakeSerialPort()
+    port = MockSerialPort()
     port.write = lambda data: len(data)  # a device that never answers
     with pytest.raises(SerialStageError, match='No answer'):
         SerialStage(port).identity()
 
 
 def test_serial_commands_are_terminated():
-    device = FakeInstrument()
-    SerialStage(FakeSerialPort(device)).move_to(1.5)
+    device = MockInstrument()
+    SerialStage(MockSerialPort(device)).move_to(1.5)
     assert device.commands == ['POS 1.5000', 'SYST:ERR?']
 
 
@@ -98,8 +98,8 @@ class TestPymeasureDriver:
             CookbookSource(adapter).position = 500.
 
     def test_against_the_simulated_device(self):
-        source = CookbookSource(MockAdapter(FakeInstrument(speed=1000.)))
-        assert source.id == FakeInstrument.IDN
+        source = CookbookSource(MockAdapter(MockInstrument(speed=1000.)))
+        assert source.id == MockInstrument.IDN
         source.position = 4.
         time.sleep(0.02)
         assert source.position == pytest.approx(4., abs=1e-3)

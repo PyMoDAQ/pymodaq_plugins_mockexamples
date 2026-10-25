@@ -12,7 +12,7 @@ from pymodaq.control_modules.viewer_utility_classes import DAQ_Viewer_base, como
 from pymodaq.utils.data import DataFromPlugins
 from pymodaq_data import DataToExport
 
-from pymodaq_plugins_mockexamples.hardware.fake_instrument import FakeVisaResource
+from pymodaq_plugins_mockexamples.hardware.mock_instrument import MockVisaResource
 from pymodaq_plugins_mockexamples.hardware.visa_meter import VisaMeter
 
 
@@ -30,7 +30,7 @@ class DAQ_0DViewer_CookbookVisa(DAQ_Viewer_base):
     def ini_detector(self, controller=None):
         if self.is_master:
             address = self.settings['address']
-            self.controller = VisaMeter(FakeVisaResource() if address == 'MOCK' else address,
+            self.controller = VisaMeter(MockVisaResource() if address == 'MOCK' else address,
                                         timeout=self.settings['visa_timeout'])
         else:  # a master actuator or detector shares its controller
             self.controller = controller
