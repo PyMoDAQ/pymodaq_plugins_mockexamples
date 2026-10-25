@@ -72,7 +72,7 @@ Viewer1D
 * **MockRandom** (`gaussian scan`_): simulates a shuffled Gaussian; shows the sort button of the 1D viewer.
 * **Harmonics** (`harmonics`_): simulates the harmonics spectrum of the source; shows pint units and roi_select.
 * **CookbookSpectrometer** (`spectrometer`_): simulates a spectrometer with grating, laser line and exposure; shows a calibrated wavelength axis (nm) and the interface of the spectrometer extension. It replaces *Mock_spectro*, removed in this version: a saved preset that uses it must pick *CookbookSpectrometer* instead.
-* **MockSpectroErrors** (`error tests`_): simulates the spectrometer averaged over several acquisitions; shows data with errors from averaging.
+* **MockSpectroErrors** (`error tests`_): simulates a spectrometer that averages itself (hardware averaging); shows how a plugin fills the errors of the data with the standard error of the mean, as PyMoDAQ does when it averages (PyMoDAQ PR 1401).
 
 Viewer2D
 ++++++++

@@ -173,14 +173,17 @@ class TestExtensionInterface:
         assert grab_and_wait(detector)[0][0].max() == pytest.approx(ref / 2, rel=0.2)
 
 
-def test_errors_variant_sends_the_standard_deviation(qapp):
+def test_errors_variant_sends_the_standard_error_of_the_mean(qapp):
+    """Same calculation as the DAQ_Viewer when it averages (PyMoDAQ PR 1401): sigma / sqrt(N), sigma with ddof=1"""
     from pymodaq_plugins_mockexamples.daq_viewer_plugins.plugins_1D.daq_1Dviewer_MockSpectroErrors import \
         DAQ_1DViewer_MockSpectroErrors
     plugin = make_detector(DAQ_1DViewer_MockSpectroErrors)
     try:
-        dwa = grab_and_wait(plugin, naverage=5)[0]
-        assert dwa.errors is not None and dwa.errors[0].shape == dwa[0].shape
-        assert dwa.errors[0].max() > 0
+        spectra = np.random.default_rng(1).normal(2., 0.5, size=(7, Spectrometer.Nx))
+        plugin.average_spectra = lambda n_average: spectra
+        dwa = grab_and_wait(plugin, naverage=7)[0]
+        assert dwa.n_averaged == 7
+        assert dwa[0] == pytest.approx(spectra.mean(axis=0))
+        assert dwa.errors[0] == pytest.approx(spectra.std(axis=0, ddof=1) / np.sqrt(7))
     finally:
         plugin.close()
-
