@@ -1,5 +1,7 @@
 #this is the configuration file of the plugin
 title = 'MockExamples'
+# copy the experiment files of the resources folder in the experiments folder of PyMoDAQ, if not already there
+copy_experiments = true
 
 [temp_controller]
 kp = 2

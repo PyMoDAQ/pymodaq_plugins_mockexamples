@@ -90,8 +90,9 @@ Simulated setups
 
 The instruments above grouped by what they simulate (the links of the lists lead to the rows of this table).
 Instruments of a setup that share a controller must have the same *controller ID* in the Dashboard. The
-experiment files (``resources/*.xml``) are to be copied in the ``.pymodaq/experiments`` folder, they load in the
-Dashboard of PyMoDAQ 5.3.
+experiment files (``resources/*.xml``) are copied in the ``.pymodaq/experiments`` folder the first time the package
+is imported (a file already there is never overwritten; set ``copy_experiments = false`` in the configuration of the
+plugin to stop it), they load in the Dashboard of PyMoDAQ 5.3.
 
 .. list-table::
    :header-rows: 1
