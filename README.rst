@@ -79,6 +79,7 @@ Viewer2D
 
 * **BSCamera** (`beam steering`_): simulates a camera imaging a laser spot, with fringes and drift; shows live acquisition, several data and a shared controller.
 * **RoiStuff** (`beam steering`_): simulates the beam steering camera cropped to a ROI; shows roi_select receiving the ROI from the viewer.
+* **CookbookCamera** (`camera driver`_): simulates a camera with its own acquisition thread and buffer; shows the camera base class of pymodaq_plugins_utils and its driver contract.
 
 ViewerND
 ++++++++
@@ -144,6 +145,13 @@ plugin to stop it), they load in the Dashboard of PyMoDAQ 5.3.
      - actuators *MockComplexSignal*; 0D *MockComplexSignal*, *MockAdaptive*
      - none
      - Scans in one or two dimensions, the ``positions`` argument of an adaptive scan
+   * - .. _camera driver:
+
+       **Camera with its own thread**
+
+     - 2D *CookbookCamera*
+     - none
+     - A camera driver whose thread fills a buffer, with the ROI drawn in the viewer applied by the camera
    * - .. _spectrometer:
 
        **Spectrometer with a calibrated axis**
@@ -176,12 +184,12 @@ plugin to stop it), they load in the Dashboard of PyMoDAQ 5.3.
 Cookbook of device patterns
 ===========================
 
-Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe is a pair
-(actuator and 0D detector) that runs without hardware: leave the port or the address to ``MOCK`` and the plugin talks
-to a simulated device: a stage with a voltmeter (``hardware/mock_serial_visa_instrument.py``) or a 3-axis controller
-behind a library (``hardware/mock_dll_controller.py``). Each file starts with a header telling what to
+Short, runnable and tested plugins to copy from when writing a plugin for a real instrument. Each recipe runs without
+hardware: leave the port or the address to ``MOCK`` and the plugin talks to a simulated device: a stage with a voltmeter
+(``hardware/mock_serial_visa_instrument.py``), a 3-axis controller behind a library (``hardware/mock_dll_controller.py``),
+a camera (``hardware/mock_camera.py``)... Each file starts with a header telling what to
 copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.py``, ``tests/test_cookbook_plugins.py``,
-``tests/test_cookbook_dll.py``, ``tests/test_cookbook_dotnet.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_bs_camera.py``) show how to test a
+``tests/test_cookbook_dll.py``, ``tests/test_cookbook_dotnet.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_cookbook_camera.py``, ``tests/test_bs_camera.py``) show how to test a
 plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
 Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
@@ -215,6 +223,13 @@ done by the camera                      ``hardware/beam_steering.py``           
                                                                                         scales the signal, axes in um (pixel size) that follow the ROI
                                                                                         and the binning. ``RoiStuff`` is the other way: the ROI is drawn
                                                                                         in the viewer and the plugin crops after the grab
+Camera, on the camera base class of     ``daq_2Dviewer_CookbookCamera``,                A camera driver that follows ``CameraDriverBase`` (the methods
+``pymodaq_plugins_utils``               ``hardware/mock_camera.py``                     of the pylablib cameras) behind ``CameraBase``, which does the
+                                                                                        rest: a thread that waits for the frames, snap and live, the ROI
+                                                                                        drawn in the viewer applied by the camera, binning, exposure,
+                                                                                        FPS and axes in um. The simulated camera has its own thread and
+                                                                                        buffer, as a real one. Copy ``mock_camera.py`` to write the driver
+                                                                                        of a camera that pylablib does not drive
 Spectrometer, calibrated axis that      ``daq_1Dviewer_CookbookSpectrometer``,          A wavelength axis in nm asked to the instrument at every grab
 changes, actuator slave of a detector   ``daq_move_CookbookSpectrometer``,              because the grating moves it. The actuator (central wavelength)
                                         ``hardware/spectrometer.py``                    and the detector share one instrument; a homing that waits for
