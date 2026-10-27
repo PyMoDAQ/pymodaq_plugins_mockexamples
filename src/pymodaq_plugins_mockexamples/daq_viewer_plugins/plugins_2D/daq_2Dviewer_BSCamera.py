@@ -14,9 +14,9 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
     """ Generate a 2D image with a spot on it whose position can be set
     using DAQ_Move_BSPiezoMirror
 
-    It is also the camera recipe of the cookbook. It shows what a camera driver gives to its plugin: a region of
-    interest (ROI) and a binning applied by the camera itself, an exposure time that scales the signal, and axes
-    calibrated in um (the pixel size of the sensor) that follow the ROI and the binning. Compare with
+    It is a plain ``DAQ_Viewer_base`` plugin: the ROI, the binning and the exposure time below are settings of its own,
+    applied by its simulated camera. The camera recipe of the cookbook, built on ``CameraBase`` (settings
+    ``comon_parameters + cam_params``), is ``DAQ_2DViewer_CookbookCamera``. Compare also with
     ``DAQ_2DViewer_RoiStuff``, where the ROI is drawn in the viewer and applied by the plugin after the grab.
     """
     live_mode_available = True
