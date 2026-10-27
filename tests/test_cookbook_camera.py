@@ -32,12 +32,17 @@ def camera(qapp):
     plugin.close()
 
 
+def click_led(plugin, name: str):
+    """What the user does: press the (checkable) button of the parameter, which the DAQ_Viewer sends to the plugin"""
+    param = plugin.settings.child('roi', name)
+    param.opts['checked'] = True
+    param.activate()
+
+
 def apply_roi(plugin, rows_um: slice, columns_um: slice):
-    plugin.settings.child('roi', 'update_roi').setValue(True)
     plugin.roi_select(RoiInfo.from_slices([rows_um, columns_um]))
-    param = plugin.settings.child('roi', 'apply_roi')
-    param.setValue(True)
-    plugin.commit_settings(param)
+    click_led(plugin, 'update_roi')
+    click_led(plugin, 'apply_roi')
 
 
 class TestMockCamera:
