@@ -14,10 +14,14 @@ class DAQ_2DViewer_BSCamera(DAQ_Viewer_base):
     """ Generate a 2D image with a spot on it whose position can be set
     using DAQ_Move_BSPiezoMirror
 
-    It is also the camera recipe of the cookbook. It shows what a camera driver gives to its plugin: a region of
-    interest (ROI) and a binning applied by the camera itself, an exposure time that scales the signal, and axes
-    calibrated in um (the pixel size of the sensor) that follow the ROI and the binning. Compare with
-    ``DAQ_2DViewer_RoiStuff``, where the ROI is drawn in the viewer and applied by the plugin after the grab.
+    It is a plain ``DAQ_Viewer_base`` plugin on purpose, it does not follow the shared pattern of
+    ``pymodaq_plugins_utils`` (``CameraBase``, settings ``comon_parameters + cam_params``). It is the camera of the
+    beam steering demonstrations: its settings (beam, drift, sensor, ROI, binning, exposure) are those the demo
+    experiments (``beam_steering.xml``) use, and it must stay short and self-contained to demonstrate the features
+    of PyMoDAQ rather than a camera driver. The ROI, the binning and the exposure time are settings of its own,
+    applied by its simulated camera. The camera recipe of the cookbook, to copy for a real camera, is
+    ``DAQ_2DViewer_CookbookCamera``. Compare also with ``DAQ_2DViewer_RoiStuff``, where the ROI is drawn in the
+    viewer and applied by the plugin after the grab.
     """
     live_mode_available = True
     hardware_averaging = True
