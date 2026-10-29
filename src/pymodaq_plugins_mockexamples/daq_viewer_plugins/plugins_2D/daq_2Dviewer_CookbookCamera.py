@@ -15,6 +15,9 @@ KEEP:
 
 ``BSCamera`` is the other camera of the package: there the plugin itself does the readout of a simulated sensor, which
 shows the ROI, the binning and the calibrated axes without a base class.
+
+Who runs where (GUI thread, plugin thread, driver thread): see the diagrams of "How an instrument plugin works with the
+Dashboard" (``plugin_workflow``) in the developer guide of PyMoDAQ.
 """
 from pymodaq.control_modules.viewer_utility_classes import comon_parameters, main
 

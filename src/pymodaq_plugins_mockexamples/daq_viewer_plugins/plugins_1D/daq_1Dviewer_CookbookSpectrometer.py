@@ -17,6 +17,9 @@ value.
 
 Try it with the actuator ``CookbookSpectrometer`` in the Dashboard (same controller ID), or alone: change the
 central wavelength or the grating and the axis follows. See ``hardware/spectrometer.py`` for the simulated instrument.
+
+Who runs where (GUI thread, plugin thread, driver thread): see the diagrams of "How an instrument plugin works with the
+Dashboard" (``plugin_workflow``) in the developer guide of PyMoDAQ.
 """
 import numpy as np
 from qtpy import QtWidgets

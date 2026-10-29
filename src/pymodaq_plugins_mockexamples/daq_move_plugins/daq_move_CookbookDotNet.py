@@ -17,6 +17,9 @@ KEEP:
 Try it without the assembly: leave the port to ``MOCK``, the assembly is then the simulated one of
 ``hardware/mock_dotnet_controller.py``. The runtime of .NET and the loading of the assembly are in
 ``hardware/dotnet_runtime.py``.
+
+Who runs where (GUI thread, plugin thread, driver thread): see the diagrams of "How an instrument plugin works with the
+Dashboard" (``plugin_workflow``) in the developer guide of PyMoDAQ.
 """
 from qtpy.QtCore import Signal, Slot
 
