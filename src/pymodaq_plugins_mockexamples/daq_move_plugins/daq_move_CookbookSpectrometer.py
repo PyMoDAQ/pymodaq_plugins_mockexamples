@@ -11,6 +11,9 @@ KEEP:
 - ``move_home``: the homing is not polled by PyMoDAQ, so the plugin waits for its end and calls ``move_done``.
 
 Moving the grating changes the wavelength axis of the detector, see ``daq_1Dviewer_CookbookSpectrometer.py``.
+
+Who runs where (GUI thread, plugin thread, driver thread): see the diagrams of "How an instrument plugin works with the
+Dashboard" (``plugin_workflow``) in the developer guide of PyMoDAQ.
 """
 from qtpy.QtCore import QThread
 

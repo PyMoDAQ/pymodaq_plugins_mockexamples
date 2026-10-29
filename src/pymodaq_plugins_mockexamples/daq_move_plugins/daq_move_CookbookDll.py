@@ -17,6 +17,9 @@ KEEP:
 Try it without the DLL: leave the port to ``MOCK``, the library is then the simulated one of
 ``hardware/mock_dll_controller.py``. See ``hardware/dll_controller.py`` for the ``ctypes`` driver and
 ``hardware/native_library.py`` for the loading of the library.
+
+Who runs where (GUI thread, plugin thread, driver thread): see the diagrams of "How an instrument plugin works with the
+Dashboard" (``plugin_workflow``) in the developer guide of PyMoDAQ.
 """
 from qtpy.QtCore import Signal, Slot
 

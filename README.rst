@@ -192,6 +192,10 @@ copy, what to adapt and what to keep. The tests (``tests/test_cookbook_drivers.p
 ``tests/test_cookbook_dll.py``, ``tests/test_cookbook_dotnet.py``, ``tests/test_cookbook_spectrometer.py``, ``tests/test_cookbook_camera.py``, ``tests/test_bs_camera.py``) show how to test a
 plugin against a simulated device with the harness of ``pymodaq.utils.plugin_testing``.
 
+To see who runs where (the user interface in the GUI thread, the plugin in its own thread, the driver and its
+own threads), read the diagrams of `How an instrument plugin works with the Dashboard
+<https://pymodaq.cnrs.fr/en/latest/developer_folder/plugin_workflow.html>`__ in the PyMoDAQ developer guide.
+
 Giving the same *controller ID* to an actuator and a detector of a recipe makes them share one driver: the first
 initialized is the master and creates it, the other is the slave and receives it.
 
