@@ -296,6 +296,14 @@ Extensions
   *resources/ontology/basic_ontology.ttl* (Turtle, read by the ``rdf`` source): its terms know what they are a kind of, so choosing the concept *Optical signal*
   and the action *Select the channels of the concept* selects the instruments whose channels are photodiode signals or
   spectra, whatever the instruments are called. Without ``pymodaq_ontology`` it works as a plain logger.
+* **Spectro Concepts** (*extensions/spectro_concepts.py*): what the ontology terms of the channels let the experiment
+  do, whatever the instruments are called. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now).
+  The experiments ``spectro_lab_a.xml`` and ``spectro_lab_b.xml`` have three simulated spectrometers (plugins
+  *MockSpectroDark*, *MockSpectroReference*, *MockSpectroSample*) with neutral names that differ from one experiment to
+  the other. Assign *Dark spectrum*, *Reference spectrum* and *Sample spectrum* to their channels in the *Ontology*
+  manager: the action *What can I compute?* tells that the *Transmittance* and the *Absorbance* can be computed (the
+  ontology *resources/ontology/spectro_ontology.ttl* says what each one is derived from) or what is missing, and *Grab
+  and compute* shows them live, with the formulas coded in the extension.
 
 
 Installation instructions

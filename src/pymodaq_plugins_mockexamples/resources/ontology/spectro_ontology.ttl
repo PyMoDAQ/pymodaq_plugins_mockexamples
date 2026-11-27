@@ -1,0 +1,53 @@
+@prefix mock: <http://example.org/mockexamples#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+
+# Ontology of the spectro demo (extension "Spectro Concepts"), read by the "rdf" source of pymodaq_ontology.
+# The IRIs are examples (the namespace is not published): replace them by the ones of a real ontology.
+#
+# Besides "is a kind of" (rdfs:subClassOf) the terms say what they are physically:
+#   mock:quantity     the physical quantity ("intensity", "ratio"...)
+#   mock:unit         its unit ("counts", "1" for a pure number)
+#   mock:derivedFrom  the terms it is computed from; mock:formula tells how (documentation, the code is in the extension)
+
+mock:quantity a owl:AnnotationProperty ; rdfs:label "quantity"@en .
+mock:unit a owl:AnnotationProperty ; rdfs:label "unit"@en .
+mock:formula a owl:AnnotationProperty ; rdfs:label "formula"@en .
+mock:derivedFrom a owl:ObjectProperty ; rdfs:label "derived from"@en .
+
+mock:Signal a owl:Class ; rdfs:subClassOf sosa:ObservableProperty ;
+    rdfs:label "Signal"@en ; skos:definition "Any signal measured by a detector."@en .
+
+mock:Spectrum a owl:Class ; rdfs:subClassOf mock:Signal ;
+    rdfs:label "Spectrum"@en ; skos:definition "Light intensity as a function of the wavelength, in counts."@en ;
+    mock:quantity "intensity" ; mock:unit "counts" .
+
+mock:DarkSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
+    rdfs:label "Dark spectrum"@en ; skos:definition "Spectrum with no light: the offset of the detector."@en .
+
+mock:ReferenceSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
+    rdfs:label "Reference spectrum"@en ; skos:definition "Spectrum of the lamp alone, without the sample."@en .
+
+mock:SampleSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
+    rdfs:label "Sample spectrum"@en ; skos:definition "Spectrum of the lamp after the sample."@en .
+
+mock:Transmittance a owl:Class ; rdfs:subClassOf mock:Signal ;
+    rdfs:label "Transmittance"@en ; skos:definition "Fraction of the light that goes through the sample."@en ;
+    mock:quantity "ratio" ; mock:unit "1" ;
+    mock:derivedFrom mock:SampleSpectrum , mock:ReferenceSpectrum , mock:DarkSpectrum ;
+    mock:formula "(sample - dark) / (reference - dark)" .
+
+mock:Absorbance a owl:Class ; rdfs:subClassOf mock:Signal ;
+    rdfs:label "Absorbance"@en ; skos:definition "Decimal logarithm of the inverse of the transmittance."@en ;
+    mock:quantity "ratio" ; mock:unit "1" ;
+    mock:derivedFrom mock:Transmittance ;
+    mock:formula "-log10(transmittance)" .
+
+mock:Control a owl:Class ; rdfs:subClassOf sosa:ActuatableProperty ;
+    rdfs:label "Control"@en ; skos:definition "Anything the experiment sets."@en .
+
+mock:Wavelength a owl:Class ; rdfs:subClassOf mock:Control ;
+    rdfs:label "Wavelength"@en ; skos:definition "Wavelength selected by a monochromator or a laser."@en ;
+    mock:quantity "length" ; mock:unit "nm" .
