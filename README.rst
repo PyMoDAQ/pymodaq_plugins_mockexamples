@@ -289,6 +289,11 @@ Extensions
   save them. It shows how to use the ``modules_manager``, how to wait for the instruments with callbacks instead of
   blocking the GUI, units on the positions and a clean shutdown. It works with the mock instruments of PyMoDAQ. See
   "How a Dashboard extension works" in the PyMoDAQ documentation.
+* **Ontology Logger** (*extensions/ontology_logger.py*): a DAQ_Logger whose saved data carry the ontology terms assigned
+  to the channels of the instruments. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now): its
+  *Ontology* manager of the Dashboard assigns a term to each channel, and this extension asks the manager to annotate
+  what its worker saves (``semantic_iri`` attribute). A small ontology for the mock instruments is given in
+  *resources/ontology/basic_terms.toml*. Without ``pymodaq_ontology`` it works as a plain logger.
 
 
 Installation instructions
