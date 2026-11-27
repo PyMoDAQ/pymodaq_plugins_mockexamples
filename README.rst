@@ -293,7 +293,7 @@ Extensions
   to the channels of the instruments. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now): its
   *Ontology* manager of the Dashboard assigns a term to each channel, and this extension asks the manager to annotate
   what its worker saves (``semantic_iri`` attribute). A small ontology for the mock instruments is given in
-  *resources/ontology/basic_terms.toml*: its terms know what they are a kind of, so choosing the concept *Optical signal*
+  *resources/ontology/basic_ontology.ttl* (Turtle, read by the ``rdf`` source): its terms know what they are a kind of, so choosing the concept *Optical signal*
   and the action *Select the channels of the concept* selects the instruments whose channels are photodiode signals or
   spectra, whatever the instruments are called. Without ``pymodaq_ontology`` it works as a plain logger.
 

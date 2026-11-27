@@ -1,0 +1,34 @@
+@prefix mock: <http://example.org/mockexamples#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+
+# A basic ontology for the mock instruments, read by the "rdf" source of pymodaq_ontology.
+# The IRIs are examples (the namespace is not published): replace them by the ones of a real ontology.
+# ``rdfs:subClassOf`` says what a term is a kind of: the Ontology Logger uses it to find the channels of a concept.
+# A term that is a kind of sosa:ObservableProperty is meant for detectors, of sosa:ActuatableProperty for actuators.
+
+mock:Signal a owl:Class ; rdfs:subClassOf sosa:ObservableProperty ;
+    rdfs:label "Signal"@en ; skos:definition "Any signal measured by a detector."@en .
+
+mock:OpticalSignal a owl:Class ; rdfs:subClassOf mock:Signal ;
+    rdfs:label "Optical signal"@en ; skos:definition "A signal produced by light."@en .
+
+mock:Photodiode a owl:Class ; rdfs:subClassOf mock:OpticalSignal ;
+    rdfs:label "Photodiode signal"@en ; skos:definition "Voltage delivered by a photodiode."@en .
+
+mock:Spectrum a owl:Class ; rdfs:subClassOf mock:OpticalSignal ;
+    rdfs:label "Spectrum"@en ; skos:definition "Intensity as a function of the wavelength."@en .
+
+mock:Temperature a owl:Class ; rdfs:subClassOf mock:Signal ;
+    rdfs:label "Temperature"@en ; skos:definition "Temperature of the sample or of the setup."@en .
+
+mock:Control a owl:Class ; rdfs:subClassOf sosa:ActuatableProperty ;
+    rdfs:label "Control"@en ; skos:definition "Anything the experiment sets."@en .
+
+mock:Position a owl:Class ; rdfs:subClassOf mock:Control ;
+    rdfs:label "Position"@en ; skos:definition "Position of a moving stage."@en .
+
+mock:Wavelength a owl:Class ; rdfs:subClassOf mock:Control ;
+    rdfs:label "Wavelength"@en ; skos:definition "Wavelength selected by a monochromator or a laser."@en .

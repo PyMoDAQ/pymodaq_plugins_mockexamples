@@ -5,7 +5,7 @@ It shows how an extension works with the ``OntologyManager`` of the ``pymodaq_on
 * the manager lives in the Dashboard (menu *Ontology*): the user assigns a term to each channel of the instruments
 * the extension asks the manager to annotate the data saved by its worker (``attach_worker``): the ``semantic_iri``
   extra attribute is written with the data
-* it gives the manager a small ontology of its own (``resources/ontology/basic_terms.toml``) if none was loaded yet
+* it gives the manager a small ontology of its own (``resources/ontology/basic_ontology.ttl``) if none was loaded yet
 * the terms know what they are a kind of (``broader``): choose a concept, for instance *Optical signal*, and the
   action *Select the channels of the concept* selects the instruments with a channel whose term is that concept or
   a kind of it (a *Photodiode signal* is an *Optical signal*), whatever the instruments are called
@@ -28,7 +28,7 @@ logger = set_logger(get_module_name(__file__))
 EXTENSION_NAME = 'Ontology Logger'  # displayed in the Extensions menu of the Dashboard
 CLASS_NAME = 'OntologyLogger'  # the name of the class below
 
-TERMS_FILE = Path(__file__).parent.parent.joinpath('resources', 'ontology', 'basic_terms.toml')
+TERMS_FILE = Path(__file__).parent.parent.joinpath('resources', 'ontology', 'basic_ontology.ttl')
 
 
 class OntologyLogger(DAQLogger):
@@ -45,7 +45,7 @@ class OntologyLogger(DAQLogger):
             self.update_status('pymodaq_ontology is not installed: the data are saved without annotation')
             return
         if self.ontology_manager.source is None:
-            self._load_basic_terms()
+            self._load_basic_ontology()
         self._update_concepts()
         self.ontology_manager.attach_worker(self.logging)
 
@@ -82,9 +82,9 @@ class OntologyLogger(DAQLogger):
         self.update_status(message)
         return message
 
-    def _load_basic_terms(self, path: Optional[Path] = None) -> None:
+    def _load_basic_ontology(self, path: Optional[Path] = None) -> None:
         from pymodaq_ontology.source_factory import SourceFactory
-        self.ontology_manager.set_source(SourceFactory.create('terms', str(path or TERMS_FILE)))
+        self.ontology_manager.set_source(SourceFactory.create('rdf', str(path or TERMS_FILE)))
 
     def _quit_fun(self) -> bool:
         can_quit = super()._quit_fun()
