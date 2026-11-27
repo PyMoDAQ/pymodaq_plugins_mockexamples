@@ -19,7 +19,11 @@ from pymodaq_ontology import manager as manager_module
 from pymodaq_plugins_mockexamples.extensions import ontology_logger
 from pymodaq_plugins_mockexamples.extensions.ontology_logger import OntologyLogger
 
-PHOTODIODE = 'http://example.org/mockexamples#Photodiode'
+NS = 'http://example.org/mockexamples#'
+PHOTODIODE = NS + 'Photodiode'
+TEMPERATURE = NS + 'Temperature'
+OPTICAL = NS + 'OpticalSignal'
+SIGNAL = NS + 'Signal'
 
 
 def test_is_a_dashboard_extension():
@@ -40,12 +44,15 @@ def dashboard(qtbot, tmp_path, monkeypatch):
     qtbot.addWidget(dashboard.tree)
 
     creator = dashboard.module_creator
-    detector = creator.create_detector('Det', DAQTypesEnum.DAQ0D)
-    creator.set_detector_type(detector, DAQTypesEnum.DAQ0D, 'Mock')
-    creator.add_detector(detector)
-    detector.init_hardware_ui(True)
-    qtbot.waitUntil(lambda: detector.initialized_state, timeout=10000)
-    dashboard.modules_manager.detectors_all = [detector]
+    detectors = []
+    for name in ('Det', 'Other'):
+        detector = creator.create_detector(name, DAQTypesEnum.DAQ0D)
+        creator.set_detector_type(detector, DAQTypesEnum.DAQ0D, 'Mock')
+        creator.add_detector(detector)
+        detector.init_hardware_ui(True)
+        detectors.append(detector)
+    qtbot.waitUntil(lambda: all(d.initialized_state for d in detectors), timeout=10000)
+    dashboard.modules_manager.detectors_all = detectors
     yield dashboard
     QtWidgets.QApplication.processEvents()
     dashboard.quit_fun()
@@ -85,3 +92,21 @@ def test_the_saved_data_carry_the_assigned_term(extension, qtbot, tmp_path):
     assert nodes
     iris = nodes[0].attrs['semantic_iri']
     assert PHOTODIODE in ([iris] if isinstance(iris, str) else list(iris))
+
+
+def test_select_the_instruments_by_what_their_channels_mean(extension):
+    """The names of the modules say nothing: the terms assigned to their channels do"""
+    manager = extension.ontology_manager
+    manager.probe()
+    det = next(c for c in manager.channels if c.module == 'Det')
+    other = next(c for c in manager.channels if c.module == 'Other')
+    manager.assign(det.key, PHOTODIODE)
+    manager.assign(other.key, TEMPERATURE)
+
+    extension.settings['concept'] = OPTICAL
+    extension.select_channels_of_concept()
+    assert extension.modules_manager.selected_detectors_name == ['Det']  # a photodiode signal is an optical signal
+
+    extension.settings['concept'] = SIGNAL
+    extension.select_channels_of_concept()
+    assert extension.modules_manager.selected_detectors_name == ['Det', 'Other']  # both are signals

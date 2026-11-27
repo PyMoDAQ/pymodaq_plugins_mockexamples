@@ -1,5 +1,6 @@
 # A basic ontology for the mock instruments, in the format read by the "terms" source of pymodaq_ontology.
 # The IRIs are examples (the namespace is not published): replace them by the ones of a real ontology.
+# ``broader`` says what a term is a kind of: the Ontology Logger uses it to find the channels of a concept.
 
 [[term]]
 iri = "http://example.org/mockexamples#Signal"
@@ -9,11 +10,28 @@ description = "Any signal measured by a detector."
 roles = ["detector"]
 
 [[term]]
+iri = "http://example.org/mockexamples#OpticalSignal"
+label = "Optical signal"
+category = "Detection"
+description = "A signal produced by light."
+roles = ["detector"]
+broader = ["http://example.org/mockexamples#Signal"]
+
+[[term]]
 iri = "http://example.org/mockexamples#Photodiode"
 label = "Photodiode signal"
 category = "Detection"
 description = "Voltage delivered by a photodiode."
 roles = ["detector"]
+broader = ["http://example.org/mockexamples#OpticalSignal"]
+
+[[term]]
+iri = "http://example.org/mockexamples#Spectrum"
+label = "Spectrum"
+category = "Detection"
+description = "Intensity as a function of the wavelength."
+roles = ["detector"]
+broader = ["http://example.org/mockexamples#OpticalSignal"]
 
 [[term]]
 iri = "http://example.org/mockexamples#Temperature"
@@ -21,6 +39,7 @@ label = "Temperature"
 category = "Environment"
 description = "Temperature of the sample or of the setup."
 roles = ["detector", "actuator"]
+broader = ["http://example.org/mockexamples#Signal"]
 
 [[term]]
 iri = "http://example.org/mockexamples#Position"
