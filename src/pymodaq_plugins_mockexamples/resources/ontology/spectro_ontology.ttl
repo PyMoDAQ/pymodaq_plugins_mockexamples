@@ -1,5 +1,4 @@
 @prefix mock: <http://example.org/mockexamples#> .
-@prefix pq: <https://pymodaq.cnrs.fr/ontology#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
@@ -65,12 +64,16 @@ mock:SampleHolder a owl:Class ; rdfs:subClassOf mock:Control ;
     rdfs:label "Cuvette holder"@en ; skos:definition "Puts the reference cuvette (0) or the cuvette with the sample (1) in the beam."@en .
 
 # the states of the controls: what the terms above require (terms to associate with a value of the actuator).
-# A kind of pq:State is a state, not a channel: the manager shows it but does not let it be assigned to a channel.
-mock:BeamBlocked a owl:Class ; rdfs:subClassOf mock:BeamBlock , pq:State ;
+# They are the members of an enumeration (owl:oneOf) of their control: a state, not a channel, so the manager shows
+# it but does not let it be assigned to a channel.
+mock:BeamBlocked a owl:NamedIndividual , mock:BeamBlock ;
     rdfs:label "Beam blocked"@en ; skos:definition "The beam is blocked: the detector sees no light."@en .
-mock:BeamOpen a owl:Class ; rdfs:subClassOf mock:BeamBlock , pq:State ;
+mock:BeamOpen a owl:NamedIndividual , mock:BeamBlock ;
     rdfs:label "Beam open"@en ; skos:definition "The beam goes through."@en .
-mock:ReferenceInBeam a owl:Class ; rdfs:subClassOf mock:SampleHolder , pq:State ;
+mock:ReferenceInBeam a owl:NamedIndividual , mock:SampleHolder ;
     rdfs:label "Reference in beam"@en ; skos:definition "The reference cuvette is in the beam."@en .
-mock:SampleInBeam a owl:Class ; rdfs:subClassOf mock:SampleHolder , pq:State ;
+mock:SampleInBeam a owl:NamedIndividual , mock:SampleHolder ;
     rdfs:label "Sample in beam"@en ; skos:definition "The cuvette with the sample is in the beam."@en .
+
+mock:BeamBlock owl:equivalentClass [ a owl:Class ; owl:oneOf ( mock:BeamBlocked mock:BeamOpen ) ] .
+mock:SampleHolder owl:equivalentClass [ a owl:Class ; owl:oneOf ( mock:ReferenceInBeam mock:SampleInBeam ) ] .
