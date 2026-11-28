@@ -146,8 +146,8 @@ class SpectroConcepts(CustomExt):
             lines.append(f'  {self._label(step.term)}: ' + ', '.join(f'{module} = {value:g}'
                                                                       for module, value in step.moves))
         for term, controls in problems.items():
-            lines.append(f'{self._label(term)} needs a value of an actuator for: '
-                         + ', '.join(self._label(c) for c in controls))
+            states = ', '.join(self._label(c) for c in controls)
+            lines.append(f'{self._label(term)} needs a value of an actuator for: {states}')
         available = {step.term: None for step in steps}
         computable = derivations.computable(available)
         if computable:

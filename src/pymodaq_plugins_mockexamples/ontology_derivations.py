@@ -72,8 +72,8 @@ class Derivations:
 
         Parameters
         ----------
-        detector_terms: the terms assigned to the channels of the detectors; a channel can make the measurements that are
-            kinds of its term (a channel with the term *Spectrum* can measure the dark, the reference and the sample)
+        detector_terms: the terms assigned to the channels of the detectors; a channel can make the measurements
+            that are kinds of its term (a channel with the term *Spectrum* can measure the dark, the reference and the sample)
         moves_for_states: ``moves_for_states(states)``, given by the ontology manager: the moves (actuator, value) to
             reach the states, and the states for which the user associated no value
 
