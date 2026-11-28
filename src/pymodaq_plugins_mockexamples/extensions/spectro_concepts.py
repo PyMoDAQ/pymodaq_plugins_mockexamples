@@ -2,12 +2,14 @@
 
 It uses the ``OntologyManager`` of the ``pymodaq_ontology`` package (menu *Ontology* of the Dashboard). The bench of the
 experiments ``spectro_lab_a`` and ``spectro_lab_b`` is one spectrometer, a beam block and a cuvette holder, with neutral
-module names. The user assigns a term to each of them (*Spectrum* to the spectrometer, *Beam block* and *Cuvette holder*
-to the actuators) and the extension, which never reads the names of the modules, can then:
+module names. The user assigns the term *Spectrum* to the
+spectrometer, and associates each value of the actuators, as configured on the bench (1, 0, 12.5...), with a state of
+the ontology (*Beam blocked*, *Beam open*, *Blank in beam*, *Sample in beam*) in the manager. The extension only knows
+states, never the values nor the names of the modules, and can then:
 
 * tell what it can **measure**: the ontology says in which state of the bench a spectrum is a *Dark spectrum* (beam
-  blocked), a *Reference spectrum* (beam open, blank cuvette) or a *Sample spectrum*; the extension finds the actuators
-  by their terms and what is missing if one cannot be found;
+  blocked), a *Reference spectrum* (beam open, blank cuvette) or a *Sample spectrum*; the manager gives the moves that
+  reach these states, or tells which state has no value yet;
 * tell what it can then **compute** (a *Transmittance* is derived from the three spectra, an *Absorbance* from the
   transmittance) and run the whole protocol: set the bench, grab, three times, then compute and show, with the formulas
   coded here;
@@ -117,8 +119,7 @@ class SpectroConcepts(CustomExt):
         if derivations is None:
             return [], {}, None
         detector_terms = set(self.terms_of('detector').values())
-        actuator_terms = {key: iri for key, iri in self.terms_of('actuator').items()}  # the key is the module
-        steps, problems = derivations.plan(detector_terms, actuator_terms)
+        steps, problems = derivations.plan(detector_terms, self.ontology_manager.moves_for_states)
         return steps, problems, derivations
 
     def show_what_is_possible(self) -> str:
@@ -140,12 +141,12 @@ class SpectroConcepts(CustomExt):
         if steps:
             lines.append('Can measure: ' + ', '.join(self._label(step.term) for step in steps))
         else:
-            lines.append('Nothing can be measured yet (assign a term to the spectrometer and to the actuators)')
+            lines.append('Nothing can be measured yet (assign a term to the spectrometer)')
         for step in steps:
             lines.append(f'  {self._label(step.term)}: ' + ', '.join(f'{module} = {value:g}'
                                                                       for module, value in step.moves))
         for term, controls in problems.items():
-            lines.append(f'{self._label(term)} needs an actuator with the term: '
+            lines.append(f'{self._label(term)} needs a value of an actuator for: '
                          + ', '.join(self._label(c) for c in controls))
         available = {step.term: None for step in steps}
         computable = derivations.computable(available)

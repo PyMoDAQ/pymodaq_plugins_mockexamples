@@ -61,13 +61,12 @@ class Derivations:
         for output in set(graph.subjects(MOCK.derivedFrom, None)):
             self.rules[str(output)] = sorted(str(i) for i in graph.objects(output, MOCK.derivedFrom)
                                              if isinstance(i, URIRef))
-        self.requirements: dict[str, list[tuple[str, float]]] = {}  # measurement term -> (control term, value)
+        self.requirements: dict[str, list[str]] = {}  # measurement term -> the states of the bench it requires
         for term in set(graph.subjects(MOCK.requires, None)):
-            self.requirements[str(term)] = sorted(
-                (str(graph.value(state, MOCK.control)), float(graph.value(state, MOCK.value)))
-                for state in graph.objects(term, MOCK.requires))
+            self.requirements[str(term)] = sorted(str(state) for state in graph.objects(term, MOCK.requires))
 
-    def plan(self, detector_terms: Iterable[str], actuator_terms: dict[str, str]
+    def plan(self, detector_terms: Iterable[str],
+             moves_for_states: Callable[[list[str]], tuple[list[tuple[str, float]], list[str]]]
              ) -> tuple[list[Step], dict[str, list[str]]]:
         """The measurements that the channels can make and what blocks the others
 
@@ -75,27 +74,22 @@ class Derivations:
         ----------
         detector_terms: the terms assigned to the channels of the detectors; a channel can make the measurements that are
             kinds of its term (a channel with the term *Spectrum* can measure the dark, the reference and the sample)
-        actuator_terms: the term assigned to each actuator, by module name
+        moves_for_states: ``moves_for_states(states)``, given by the ontology manager: the moves (actuator, value) to
+            reach the states, and the states for which the user associated no value
 
         Returns
         -------
-        the steps (the measurement and the moves to do first), and for the measurements that cannot be made the controls
-        for which no actuator has a term
+        the steps (the measurement and the moves to do first), and for the measurements that cannot be made the states
+        with no value
         """
         detector_terms = list(detector_terms)
         steps, problems = [], {}
         for measurement in sorted(self.requirements):
             if not any(self.is_a(measurement, term) for term in detector_terms):
                 continue
-            moves, missing = [], []
-            for control, value in self.requirements[measurement]:
-                module = next((m for m, term in sorted(actuator_terms.items()) if self.is_a(term, control)), None)
-                if module is None:
-                    missing.append(control)
-                else:
-                    moves.append((module, value))
+            moves, missing = moves_for_states(self.requirements[measurement])
             if missing:
-                problems[measurement] = sorted(set(missing))
+                problems[measurement] = sorted(missing)
             else:
                 steps.append(Step(measurement, moves))
         return steps, problems

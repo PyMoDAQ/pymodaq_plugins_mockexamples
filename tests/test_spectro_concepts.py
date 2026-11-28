@@ -22,7 +22,9 @@ from pymodaq_plugins_mockexamples.extensions.spectro_concepts import SpectroConc
 NS = 'http://example.org/mockexamples#'
 # the names of the modules say nothing: what each one is, is the plugin and, for the user, the term assigned
 ACTUATORS = {'M2': 'MockBeamBlock', 'M1': 'MockSampleChanger'}
-TERMS = {'M2': NS + 'BeamBlock', 'M1': NS + 'SampleHolder', 'Spectro': NS + 'Spectrum'}
+# the value of each state is what the user configured on the bench (here the bench blocks above 0.5)
+STATES = {NS + 'BeamBlocked': ('M2', 1.), NS + 'BeamOpen': ('M2', 0.),
+          NS + 'BlankInBeam': ('M1', 0.), NS + 'SampleInBeam': ('M1', 1.)}
 
 
 def test_is_a_dashboard_extension():
@@ -70,13 +72,16 @@ def extension(dashboard):
     ext.quit_fun()
 
 
-def assign(extension, modules):
+def assign(extension, states):
+    """Assign the term of the spectrometer and associate the values of the actuators with states"""
     manager = extension.ontology_manager
     manager.update_channels_from_dashboard()
     manager.probe()
-    for module in modules:
-        channel = next(c for c in manager.channels if c.module == module)
-        manager.assign(channel.key, TERMS[module])
+    channel = next(c for c in manager.channels if c.module == 'Spectro')
+    manager.assign(channel.key, NS + 'Spectrum')
+    for state in states:
+        actuator, value = STATES[state]
+        manager.assign_state(actuator, value, state)
 
 
 def test_the_spectro_ontology_is_given_to_the_manager(extension):
@@ -88,15 +93,15 @@ def test_nothing_can_be_measured_without_terms(extension):
     assert extension.show_what_is_possible().startswith('Nothing can be measured yet')
 
 
-def test_the_missing_actuator_is_named(extension):
-    assign(extension, ['Spectro', 'M2'])  # no term for the cuvette holder
+def test_the_state_without_value_is_named(extension):
+    assign(extension, [s for s in STATES if s != NS + 'SampleInBeam'])
     text = extension.show_what_is_possible()
-    assert text.startswith('Can measure: Dark spectrum')
-    assert 'Sample spectrum needs an actuator with the term: Cuvette holder' in text
+    assert text.startswith('Can measure: Dark spectrum, Reference spectrum')
+    assert 'Sample spectrum needs a value of an actuator for: Sample in beam' in text
 
 
 def test_the_protocol_measures_and_computes_whatever_the_names(extension, qtbot):
-    assign(extension, ['Spectro', 'M2', 'M1'])
+    assign(extension, list(STATES))
     text = extension.show_what_is_possible()
     assert text.startswith('Can measure: Dark spectrum, Reference spectrum, Sample spectrum')
     assert 'Then can compute: Transmittance, Absorbance' in text

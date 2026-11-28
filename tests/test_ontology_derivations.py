@@ -14,7 +14,9 @@ from pymodaq_plugins_mockexamples.ontology_derivations import (Derivations, Step
                                                                TRANSMITTANCE, ABSORBANCE)
 
 NS = 'http://example.org/mockexamples#'
-SPECTRUM, BEAM_BLOCK, HOLDER = NS + 'Spectrum', NS + 'BeamBlock', NS + 'SampleHolder'
+SPECTRUM = NS + 'Spectrum'
+BEAM_BLOCKED, BEAM_OPEN, BLANK, SAMPLE_IN = (NS + name for name in ('BeamBlocked', 'BeamOpen', 'BlankInBeam',
+                                                                   'SampleInBeam'))
 
 
 @pytest.fixture
@@ -39,27 +41,38 @@ def test_the_ontology_declares_the_derivations(derivations):
 
 
 def test_the_ontology_declares_the_state_of_the_bench_for_each_measurement(derivations):
-    assert derivations.requirements[DARK] == [(BEAM_BLOCK, 1.)]
-    assert derivations.requirements[REFERENCE] == [(BEAM_BLOCK, 0.), (HOLDER, 0.)]
-    assert derivations.requirements[SAMPLE] == [(BEAM_BLOCK, 0.), (HOLDER, 1.)]
+    """The states, not the values: the value of an actuator for a state is the user's, in the manager"""
+    assert derivations.requirements[DARK] == [BEAM_BLOCKED]
+    assert derivations.requirements[REFERENCE] == sorted([BEAM_OPEN, BLANK])
+    assert derivations.requirements[SAMPLE] == sorted([BEAM_OPEN, SAMPLE_IN])
 
 
-def test_the_plan_finds_the_actuators_by_their_terms(derivations):
-    """A spectrometer and two actuators with names that say nothing"""
-    steps, problems = derivations.plan([SPECTRUM], {'M2': BEAM_BLOCK, 'M1': HOLDER})
+def fake_moves(values):
+    """What the manager gives: the (actuator, value) for each state, and the states with no value"""
+    def moves_for_states(states):
+        return [values[s] for s in states if s in values], [s for s in states if s not in values]
+    return moves_for_states
+
+
+VALUES = {BEAM_BLOCKED: ('M2', 12.5), BEAM_OPEN: ('M2', 3.), BLANK: ('M1', 0.), SAMPLE_IN: ('M1', 1.)}
+
+
+def test_the_plan_gives_the_moves_of_the_states(derivations):
+    steps, problems = derivations.plan([SPECTRUM], fake_moves(VALUES))
     assert problems == {}
-    assert steps == [Step(DARK, [('M2', 1.)]), Step(REFERENCE, [('M2', 0.), ('M1', 0.)]),
-                     Step(SAMPLE, [('M2', 0.), ('M1', 1.)])]
+    assert steps == [Step(DARK, [('M2', 12.5)]), Step(REFERENCE, [('M2', 3.), ('M1', 0.)]),
+                     Step(SAMPLE, [('M2', 3.), ('M1', 1.)])]
 
 
-def test_the_plan_names_what_is_missing(derivations):
-    steps, problems = derivations.plan([SPECTRUM], {'M2': BEAM_BLOCK})  # no cuvette holder
-    assert [s.term for s in steps] == [DARK]
-    assert problems == {REFERENCE: [HOLDER], SAMPLE: [HOLDER]}
+def test_the_plan_names_the_states_without_value(derivations):
+    values = {k: v for k, v in VALUES.items() if k != SAMPLE_IN}
+    steps, problems = derivations.plan([SPECTRUM], fake_moves(values))
+    assert [s.term for s in steps] == [DARK, REFERENCE]
+    assert problems == {SAMPLE: [SAMPLE_IN]}
 
 
 def test_a_channel_with_an_unrelated_term_measures_nothing(derivations):
-    assert derivations.plan([NS + 'Temperature'], {'M2': BEAM_BLOCK, 'M1': HOLDER}) == ([], {})
+    assert derivations.plan([NS + 'Temperature'], fake_moves(VALUES)) == ([], {})
 
 
 def test_nothing_is_computable_without_the_inputs(derivations):
