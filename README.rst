@@ -295,8 +295,8 @@ Extensions
   (*MockSpectro*), a beam block (*MockBeamBlock*) and a cuvette holder (*MockSampleChanger*), with neutral module names
   that differ from one experiment to the other. In the *Ontology* manager assign the term *Spectrum* to the spectrometer
   and associate the value of each actuator, as configured on the bench, with a state (*Beam blocked*, *Beam open*,
-  *Blank in beam*, *Sample in beam*). The ontology *resources/ontology/spectro_ontology.ttl* says in which state of the bench a
-  spectrum is a *Dark spectrum* (beam blocked), a *Reference spectrum* (blank cuvette) or a *Sample spectrum*, and that a
+  *Reference in beam*, *Sample in beam*). The ontology *resources/ontology/spectro_ontology.ttl* says in which state of the bench a
+  spectrum is a *Dark spectrum* (beam blocked), a *Reference spectrum* (reference cuvette) or a *Sample spectrum*, and that a
   *Transmittance* and an *Absorbance* are derived from them. The action *What can I measure?* tells what can be measured
   and computed, or which state has no value yet; *Measure and compute* sets the bench for each measurement, grabs, then
   computes and shows the results, with the formulas coded in the extension.

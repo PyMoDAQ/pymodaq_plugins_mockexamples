@@ -1,4 +1,4 @@
-"""Ontology demo: the cuvette holder of a simulated absorption bench (0 the blank cuvette, 1 the sample), see
+"""Ontology demo: the cuvette holder of a simulated absorption bench (0 the reference cuvette, 1 the sample), see
 ``MockBeamBlock``"""
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main, DataActuatorType
 

@@ -15,7 +15,7 @@ from pymodaq_plugins_mockexamples.ontology_derivations import (Derivations, Step
 
 NS = 'http://example.org/mockexamples#'
 SPECTRUM = NS + 'Spectrum'
-BEAM_BLOCKED, BEAM_OPEN, BLANK, SAMPLE_IN = (NS + name for name in ('BeamBlocked', 'BeamOpen', 'BlankInBeam',
+BEAM_BLOCKED, BEAM_OPEN, REFERENCE_IN, SAMPLE_IN = (NS + name for name in ('BeamBlocked', 'BeamOpen', 'ReferenceInBeam',
                                                                    'SampleInBeam'))
 
 
@@ -43,7 +43,7 @@ def test_the_ontology_declares_the_derivations(derivations):
 def test_the_ontology_declares_the_state_of_the_bench_for_each_measurement(derivations):
     """The states, not the values: the value of an actuator for a state is the user's, in the manager"""
     assert derivations.requirements[DARK] == [BEAM_BLOCKED]
-    assert derivations.requirements[REFERENCE] == sorted([BEAM_OPEN, BLANK])
+    assert derivations.requirements[REFERENCE] == sorted([BEAM_OPEN, REFERENCE_IN])
     assert derivations.requirements[SAMPLE] == sorted([BEAM_OPEN, SAMPLE_IN])
 
 
@@ -54,7 +54,7 @@ def fake_moves(values):
     return moves_for_states
 
 
-VALUES = {BEAM_BLOCKED: ('M2', 12.5), BEAM_OPEN: ('M2', 3.), BLANK: ('M1', 0.), SAMPLE_IN: ('M1', 1.)}
+VALUES = {BEAM_BLOCKED: ('M2', 12.5), BEAM_OPEN: ('M2', 3.), REFERENCE_IN: ('M1', 0.), SAMPLE_IN: ('M1', 1.)}
 
 
 def test_the_plan_gives_the_moves_of_the_states(derivations):
@@ -109,7 +109,7 @@ def test_the_bench_follows_its_actuators():
     bench.beam_block = 1
     assert bench.grab_spectrum().mean() == pytest.approx(DARK_LEVEL, rel=0.1)
     bench.beam_block, bench.sample_position = 0, 0
-    blank = bench.grab_spectrum()
+    reference = bench.grab_spectrum()
     bench.sample_position = 1
-    assert bench.grab_spectrum()[np.argmin(np.abs(WAVELENGTHS - 550.))] < 0.4 * blank[np.argmin(np.abs(WAVELENGTHS - 550.))]
+    assert bench.grab_spectrum()[np.argmin(np.abs(WAVELENGTHS - 550.))] < 0.4 * reference[np.argmin(np.abs(WAVELENGTHS - 550.))]
     assert SpectroBench.shared() is SpectroBench.shared()

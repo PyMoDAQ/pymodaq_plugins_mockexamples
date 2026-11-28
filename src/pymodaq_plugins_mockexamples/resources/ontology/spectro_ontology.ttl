@@ -12,7 +12,7 @@
 #   mock:unit         its unit ("counts", "1" for a pure number)
 #   mock:derivedFrom  the terms it is computed from; mock:formula tells how (documentation, the code is in the extension)
 #   mock:requires     the states of the bench in which a spectrum has this meaning: the same spectrometer gives the
-#                     dark spectrum with the beam blocked, the reference with the blank cuvette, the sample with the
+#                     dark spectrum with the beam blocked, the reference with the reference cuvette, the sample with the
 #                     sample cuvette. A state is a kind of control (Beam blocked is a Beam block). The value of the
 #                     actuator that stands for a state is not here: it depends on the bench, the user associates it in
 #                     the ontology manager.
@@ -36,7 +36,7 @@ mock:DarkSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
 
 mock:ReferenceSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
     rdfs:label "Reference spectrum"@en ; skos:definition "Spectrum of the lamp alone, without the sample."@en ;
-    mock:requires mock:BeamOpen , mock:BlankInBeam .
+    mock:requires mock:BeamOpen , mock:ReferenceInBeam .
 
 mock:SampleSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
     rdfs:label "Sample spectrum"@en ; skos:definition "Spectrum of the lamp after the sample."@en ;
@@ -61,14 +61,14 @@ mock:BeamBlock a owl:Class ; rdfs:subClassOf mock:Control ;
     rdfs:label "Beam block"@en ; skos:definition "Blocks the beam (1) or lets it through (0)."@en .
 
 mock:SampleHolder a owl:Class ; rdfs:subClassOf mock:Control ;
-    rdfs:label "Cuvette holder"@en ; skos:definition "Puts the blank cuvette (0) or the cuvette with the sample (1) in the beam."@en .
+    rdfs:label "Cuvette holder"@en ; skos:definition "Puts the reference cuvette (0) or the cuvette with the sample (1) in the beam."@en .
 
 # the states of the controls: what the terms above require (terms to associate with a value of the actuator)
 mock:BeamBlocked a owl:Class ; rdfs:subClassOf mock:BeamBlock ;
     rdfs:label "Beam blocked"@en ; skos:definition "The beam is blocked: the detector sees no light."@en .
 mock:BeamOpen a owl:Class ; rdfs:subClassOf mock:BeamBlock ;
     rdfs:label "Beam open"@en ; skos:definition "The beam goes through."@en .
-mock:BlankInBeam a owl:Class ; rdfs:subClassOf mock:SampleHolder ;
-    rdfs:label "Blank in beam"@en ; skos:definition "The blank cuvette is in the beam."@en .
+mock:ReferenceInBeam a owl:Class ; rdfs:subClassOf mock:SampleHolder ;
+    rdfs:label "Reference in beam"@en ; skos:definition "The reference cuvette is in the beam."@en .
 mock:SampleInBeam a owl:Class ; rdfs:subClassOf mock:SampleHolder ;
     rdfs:label "Sample in beam"@en ; skos:definition "The cuvette with the sample is in the beam."@en .

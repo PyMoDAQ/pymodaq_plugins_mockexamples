@@ -4,12 +4,12 @@ It uses the ``OntologyManager`` of the ``pymodaq_ontology`` package (menu *Ontol
 experiments ``spectro_lab_a`` and ``spectro_lab_b`` is one spectrometer, a beam block and a cuvette holder, with neutral
 module names. The user assigns the term *Spectrum* to the
 spectrometer, and associates each value of the actuators, as configured on the bench (1, 0, 12.5...), with a state of
-the ontology (*Beam blocked*, *Beam open*, *Blank in beam*, *Sample in beam*) in the manager. The extension only knows
-states, never the values nor the names of the modules, and can then:
+the ontology (*Beam blocked*, *Beam open*, *Reference in beam*, *Sample in beam*) in the manager. The extension only
+knows states, never the values nor the names of the modules, and can then:
 
 * tell what it can **measure**: the ontology says in which state of the bench a spectrum is a *Dark spectrum* (beam
-  blocked), a *Reference spectrum* (beam open, blank cuvette) or a *Sample spectrum*; the manager gives the moves that
-  reach these states, or tells which state has no value yet;
+  blocked), a *Reference spectrum* (beam open, reference cuvette) or a *Sample spectrum*; the manager gives the moves
+  that reach these states, or tells which state has no value yet;
 * tell what it can then **compute** (a *Transmittance* is derived from the three spectra, an *Absorbance* from the
   transmittance) and run the whole protocol: set the bench, grab, three times, then compute and show, with the formulas
   coded here;

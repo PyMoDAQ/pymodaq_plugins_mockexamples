@@ -3,7 +3,7 @@
 What the spectrometer measures depends on the two actuators of the bench, as on a real one:
 
 * the beam block (1: the light is blocked, the spectrometer sees only its dark level; 0: the beam goes through)
-* the cuvette holder (0: the blank cuvette, the spectrometer sees the lamp; 1: the cuvette with the sample, which
+* the cuvette holder (0: the reference cuvette, the spectrometer sees the lamp; 1: the cuvette with the sample, which
   absorbs around 550 nm: its transmittance is about 0.9 away from the band and 0.2 at its centre)
 
 Used by the plugins ``MockBeamBlock``, ``MockSampleChanger`` (actuators) and ``MockSpectro`` (the spectrometer) of the
@@ -41,7 +41,7 @@ class SpectroBench:
 
     def __init__(self):
         self.beam_block = 0.  # 1: the beam is blocked
-        self.sample_position = 0.  # 1: the cuvette with the sample is in the beam, 0: the blank one
+        self.sample_position = 0.  # 1: the cuvette with the sample is in the beam, 0: the reference one
         self._rng = np.random.default_rng()
 
     def get_wavelength_axis(self) -> np.ndarray:

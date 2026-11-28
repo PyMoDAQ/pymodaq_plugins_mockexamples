@@ -24,7 +24,7 @@ NS = 'http://example.org/mockexamples#'
 ACTUATORS = {'M2': 'MockBeamBlock', 'M1': 'MockSampleChanger'}
 # the value of each state is what the user configured on the bench (here the bench blocks above 0.5)
 STATES = {NS + 'BeamBlocked': ('M2', 1.), NS + 'BeamOpen': ('M2', 0.),
-          NS + 'BlankInBeam': ('M1', 0.), NS + 'SampleInBeam': ('M1', 1.)}
+          NS + 'ReferenceInBeam': ('M1', 0.), NS + 'SampleInBeam': ('M1', 1.)}
 
 
 def test_is_a_dashboard_extension():
