@@ -289,7 +289,17 @@ Extensions
   save them. It shows how to use the ``modules_manager``, how to wait for the instruments with callbacks instead of
   blocking the GUI, units on the positions and a clean shutdown. It works with the mock instruments of PyMoDAQ. See
   "How a Dashboard extension works" in the PyMoDAQ documentation.
-
+* **Spectro Concepts** (*extensions/spectro_concepts.py*): what the ontology terms of the channels let the experiment do,
+  whatever the modules are called. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now). The
+  experiments ``spectro_lab_a.xml`` and ``spectro_lab_b.xml`` simulate an absorption bench: one spectrometer
+  (*MockSpectro*), a beam block (*MockBeamBlock*) and a cuvette holder (*MockSampleChanger*), with neutral module names
+  that differ from one experiment to the other. In the *Ontology* manager assign the term *Spectrum* to the spectrometer
+  and associate the value of each actuator, as configured on the bench, with a state (*Beam blocked*, *Beam open*,
+  *Reference in beam*, *Sample in beam*). The ontology *resources/ontology/spectro_ontology.ttl* says in which state of the bench a
+  spectrum is a *Dark spectrum* (beam blocked), a *Reference spectrum* (reference cuvette) or a *Sample spectrum*, and that a
+  *Transmittance* and an *Absorbance* are derived from them. The action *What can I measure?* tells what can be measured
+  and computed, or which state has no value yet; *Measure and compute* sets the bench for each measurement, grabs, then
+  computes and shows the results, with the formulas coded in the extension.
 
 Installation instructions
 =========================
