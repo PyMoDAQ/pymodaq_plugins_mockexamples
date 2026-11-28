@@ -1,16 +1,17 @@
-"""Demo extension: what the terms of the channels let the experiment do, whatever the instruments are called
+"""Demo extension: what the terms of the channels let the experiment do, whatever the modules are called
 
-It uses the ``OntologyManager`` of the ``pymodaq_ontology`` package (menu *Ontology* of the Dashboard). The user assigns
-a term to the channels of the instruments (for instance *Dark spectrum*, *Reference spectrum*, *Sample spectrum*), and
-the extension, which never reads the names of the modules, can then:
+It uses the ``OntologyManager`` of the ``pymodaq_ontology`` package (menu *Ontology* of the Dashboard). The bench of the
+experiments ``spectro_lab_a`` and ``spectro_lab_b`` is one spectrometer, a beam block and a cuvette holder, with neutral
+module names. The user assigns a term to each of them (*Spectrum* to the spectrometer, *Beam block* and *Cuvette holder*
+to the actuators) and the extension, which never reads the names of the modules, can then:
 
-* tell what can be **computed** from the terms (the ontology says that a *Transmittance* is derived from the sample, the
-  reference and the dark spectra, and an *Absorbance* from the transmittance), and what is **missing** if it cannot;
-* compute and show it live, with the formulas coded here;
-* check that what the channels give has the **unit** the term expects (counts for a spectrum).
-
-Try it with the experiments ``spectro_lab_a`` and ``spectro_lab_b``: the same three simulated spectrometers with
-different names. Assign the terms in each one, the extension works the same.
+* tell what it can **measure**: the ontology says in which state of the bench a spectrum is a *Dark spectrum* (beam
+  blocked), a *Reference spectrum* (beam open, blank cuvette) or a *Sample spectrum*; the extension finds the actuators
+  by their terms and what is missing if one cannot be found;
+* tell what it can then **compute** (a *Transmittance* is derived from the three spectra, an *Absorbance* from the
+  transmittance) and run the whole protocol: set the bench, grab, three times, then compute and show, with the formulas
+  coded here;
+* check that what a channel gives has the **unit** its term expects (counts for a spectrum).
 
 Without ``pymodaq_ontology`` the extension tells that it cannot work.
 """
@@ -29,10 +30,12 @@ from pymodaq_data.data import DataCalculated
 from pymodaq_gui import utils as gutils
 from pymodaq_gui.plotting.data_viewers import ViewerDispatcher
 
+from pymodaq.control_modules.enums import MoveType
 from pymodaq.utils.custom_ext import CustomExt
+from pymodaq.utils.data import DataActuator
 from pymodaq.utils.managers.modules import ModuleType
 
-from pymodaq_plugins_mockexamples.ontology_derivations import Derivations, MOCK
+from pymodaq_plugins_mockexamples.ontology_derivations import Derivations, MOCK, Step
 
 logger = set_logger(get_module_name(__file__))
 
@@ -45,7 +48,6 @@ TERMS_FILE = Path(__file__).parent.parent.joinpath('resources', 'ontology', 'spe
 class SpectroConcepts(CustomExt):
 
     params = [
-        {'title': 'Average:', 'name': 'average', 'type': 'int', 'value': 1, 'min': 1},
         {'title': 'Status:', 'name': 'status', 'type': 'str', 'value': 'Idle', 'readonly': True},
     ]
 
@@ -53,6 +55,7 @@ class SpectroConcepts(CustomExt):
         super().__init__(parent, dashboard)
         self.ontology_manager = getattr(dashboard, 'extra_managers', {}).get('ontology')
         self._busy = False
+        self._queue, self._results, self._problems, self._step, self._axis = [], {}, [], None, None
         self.derivations: Optional[Derivations] = None
         self.setup_ui()
         if self.ontology_manager is None:
@@ -74,13 +77,14 @@ class SpectroConcepts(CustomExt):
         self.create_dashboard_toolbar(add_break=False)
 
     def setup_actions(self):
-        self.add_action('check', 'What can I compute?', 'help',
-                        tip='Tell what the terms of the channels allow, without acquiring')
-        self.add_action('grab', 'Grab and compute', 'camera', tip='Grab all the detectors, compute and show')
+        self.add_action('check', 'What can I measure?', 'help',
+                        tip='Tell what the terms of the channels allow to measure and compute, without acquiring')
+        self.add_action('run', 'Measure and compute', 'camera',
+                        tip='Set the bench for each measurement, grab, then compute and show')
 
     def connect_things(self):
         self.connect_action('check', self.show_what_is_possible)
-        self.connect_action('grab', self.grab_and_compute)
+        self.connect_action('run', self.run_protocol)
         self.modules_manager.timeout_signal.connect(self._on_timeout)
 
     def _load_spectro_ontology(self) -> None:
@@ -88,15 +92,15 @@ class SpectroConcepts(CustomExt):
         self.ontology_manager.set_source(SourceFactory.create('rdf', str(TERMS_FILE)))
 
     # ---- the ontology side: terms of the channels
-    def terms_of_detectors(self) -> dict[str, str]:
-        """Term assigned to each channel of the detectors, by channel key"""
+    def terms_of(self, kind: str) -> dict[str, str]:
+        """Term assigned to each channel of the detectors or of the actuators, by channel key"""
         manager = self.ontology_manager
         manager.update_channels_from_dashboard()
-        return {c.key: manager.assignment.get(c.key) for c in manager.channels if c.kind == 'detector'
+        return {c.key: manager.assignment.get(c.key) for c in manager.channels if c.kind == kind
                 and manager.assignment.get(c.key)}
 
     def _derivations(self) -> Optional[Derivations]:
-        """The derivations declared by the ontology of the manager (read again if the source changed)"""
+        """The statements of the ontology of the manager (read again if the source changed)"""
         graph = getattr(self.ontology_manager.source, 'graph', None)
         if graph is None:
             return None
@@ -108,54 +112,91 @@ class SpectroConcepts(CustomExt):
         term = self.ontology_manager.terms.get(iri)
         return term.label if term else iri
 
+    def make_plan(self) -> tuple[list[Step], dict[str, list[str]], Optional[Derivations]]:
+        derivations = self._derivations()
+        if derivations is None:
+            return [], {}, None
+        detector_terms = set(self.terms_of('detector').values())
+        actuator_terms = {key: iri for key, iri in self.terms_of('actuator').items()}  # the key is the module
+        steps, problems = derivations.plan(detector_terms, actuator_terms)
+        return steps, problems, derivations
+
     def show_what_is_possible(self) -> str:
-        """Say what can be computed from the terms assigned to the channels (without acquiring). Returns the text"""
+        """Say what can be measured and computed with the terms assigned to the channels (without acquiring)"""
         if self.ontology_manager is None:
             text = 'pymodaq_ontology is not installed'
         else:
-            derivations = self._derivations()
-            assigned = self.terms_of_detectors()
-            terms = {iri: None for iri in assigned.values()}
+            steps, problems, derivations = self.make_plan()
             if derivations is None:
                 text = 'The ontology loaded in the manager has no graph: load an RDF ontology'
             else:
-                text = self._describe(assigned, derivations.computable(terms), derivations.missing(terms))
+                text = self._describe(steps, problems, derivations)
         self.what.setPlainText(text)
         self.set_status(text.splitlines()[0] if text else 'Idle')
         return text
 
-    def _describe(self, assigned: dict[str, str], computable: list[str], missing: dict[str, list[str]]) -> str:
+    def _describe(self, steps: list[Step], problems: dict[str, list[str]], derivations: Derivations) -> str:
         lines = []
-        if computable:
-            lines.append('Can compute: ' + ', '.join(self._label(i) for i in computable))
+        if steps:
+            lines.append('Can measure: ' + ', '.join(self._label(step.term) for step in steps))
         else:
-            lines.append('Nothing can be computed yet')
-        for output, inputs in missing.items():
-            lines.append(f'{self._label(output)} needs: ' + ', '.join(self._label(i) for i in inputs))
-        lines.append('')
-        lines.append('Channels with a term:')
-        lines.extend(f'  {key}  ->  {self._label(iri)}' for key, iri in assigned.items())
+            lines.append('Nothing can be measured yet (assign a term to the spectrometer and to the actuators)')
+        for step in steps:
+            lines.append(f'  {self._label(step.term)}: ' + ', '.join(f'{module} = {value:g}'
+                                                                      for module, value in step.moves))
+        for term, controls in problems.items():
+            lines.append(f'{self._label(term)} needs an actuator with the term: '
+                         + ', '.join(self._label(c) for c in controls))
+        available = {step.term: None for step in steps}
+        computable = derivations.computable(available)
+        if computable:
+            lines.append('Then can compute: ' + ', '.join(self._label(i) for i in computable))
         return '\n'.join(lines)
 
-    # ---- acquisition
-    def grab_and_compute(self):
+    # ---- the protocol: set the bench, grab, for each measurement
+    def run_protocol(self):
         if self._busy or self.ontology_manager is None:
             return
-        self.modules_manager.selected_detectors_name = self.modules_manager.detectors_name
-        self._busy = True
-        self.set_action_enabled('grab', False)
-        self.set_status('Grabbing')
+        steps, problems, derivations = self.make_plan()
+        if not steps or problems:
+            self.show_what_is_possible()
+            return
+        self._queue, self._results, self._problems, self._busy = list(steps), {}, [], True
+        self.set_action_enabled('run', False)
+        self._next_step()
+
+    def _next_step(self):
+        if not self._queue:
+            self._finish()
+            return
+        self._step = self._queue.pop(0)
+        self.set_status(f'Measuring {self._label(self._step.term)}')
+        detectors = sorted({c.module for c in self.ontology_manager.channels if c.kind == 'detector'
+                            and self.ontology_manager.assignment.get(c.key)})
+        self.modules_manager.selected_actuators_name = [module for module, _ in self._step.moves]
+        self.modules_manager.selected_detectors_name = detectors
+        target = DataToExport('target', data=[
+            DataActuator(module, data=value, units=self.modules_manager.get_mod_from_name(
+                module, ModuleType.Actuator).units) for module, value in self._step.moves])
+        self.modules_manager.move_actuators_with_callback(target, mode=MoveType.ABS, callback=self._on_move_done)
+
+    def _on_move_done(self, positions: DataToExport):
+        self.modules_manager.forget_callback(self._on_move_done, ModuleType.Actuator)
         self.modules_manager.grab_data_with_callback(callback=self._on_data)
 
     def _on_data(self, data: DataToExport):
         self.modules_manager.forget_callback(self._on_data, ModuleType.Detector)
-        try:
-            self.compute_and_show(data)
-        finally:
-            self._busy = False
-            self.set_action_enabled('grab', True)
+        arrays, problems, axis = self.arrays_by_term(data)
+        # the channel with the general term (Spectrum) gives the spectrum of the measurement (Dark spectrum...)
+        derivations = self._derivations()
+        spectrum = next((array for term, array in arrays.items() if derivations.is_a(self._step.term, term)), None)
+        if spectrum is not None:
+            self._results[self._step.term] = spectrum
+            self._axis = axis
+        self._problems.extend(p for p in problems if p not in self._problems)
+        self._next_step()
 
-    def arrays_by_term(self, data: DataToExport) -> tuple[dict[str, np.ndarray], list[str], list]:
+    def arrays_by_term(self, data: DataToExport) -> tuple[dict[str, np.ndarray], list[str], object]:
         """The array of each term assigned to a channel of the data, the unit problems and the axis of the first one"""
         from pymodaq_ontology.channels import Channel
         from pymodaq_ontology.terms import DETECTOR
@@ -178,26 +219,27 @@ class SpectroConcepts(CustomExt):
                     problems.append(f'{key}: {dwa.units} where {self._label(iri)} expects {expected}')
         return arrays, problems, axis
 
-    def compute_and_show(self, data: DataToExport) -> None:
+    def _finish(self):
         derivations = self._derivations()
-        if derivations is None:
-            self.set_status('No RDF ontology loaded in the manager')
-            return
-        arrays, problems, axis = self.arrays_by_term(data)
-        results = derivations.compute(arrays)
-        computed = [DataCalculated(self._label(iri), data=[array], axes=[axis] if axis is not None else [],
+        results = derivations.compute(self._results)
+        measured = [DataCalculated(self._label(iri), data=[array], axes=[self._axis] if self._axis is not None else [],
+                                   labels=[self._label(iri)], units='counts') for iri, array in self._results.items()]
+        computed = [DataCalculated(self._label(iri), data=[array], axes=[self._axis] if self._axis is not None else [],
                                    labels=[self._label(iri)]) for iri, array in results.items()]
-        self.viewer.show_data(DataToExport('spectro', data=[*data, *computed]))
-        lines = [self._describe(self.terms_of_detectors(), derivations.computable(arrays),
-                                derivations.missing(arrays))]
-        lines.extend(f'Unit: {p}' for p in problems)
+        self.viewer.show_data(DataToExport('spectro', data=[*measured, *computed]))
+        lines = ['Measured: ' + ', '.join(self._label(i) for i in self._results),
+                 'Computed: ' + (', '.join(self._label(i) for i in results) or 'nothing')]
+        lines.extend(f'Unit: {p}' for p in self._problems)
         self.what.setPlainText('\n'.join(lines))
-        self.set_status(lines[0].splitlines()[0])
+        self.set_status(lines[1])
+        self._busy = False
+        self.set_action_enabled('run', True)
 
     def _on_timeout(self, missing_modules: list):
-        self.modules_manager.forget_callback(self._on_data, ModuleType.Control)
+        for callback in (self._on_move_done, self._on_data):
+            self.modules_manager.forget_callback(callback, ModuleType.Control)
         self._busy = False
-        self.set_action_enabled('grab', True)
+        self.set_action_enabled('run', True)
         self.set_status(f'Timeout: {", ".join(missing_modules)}')
 
     def set_status(self, status: str):

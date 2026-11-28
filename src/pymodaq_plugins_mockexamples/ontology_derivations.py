@@ -1,12 +1,14 @@
-"""What can be computed from the terms of the channels: the derivations declared by an ontology
+"""What the terms of the channels let the experiment do: the statements of an ontology about measuring and computing
 
-The ontology says that a term is ``mock:derivedFrom`` other terms (``Transmittance`` from the sample, the reference and
-the dark spectra). This module reads these statements in the RDF graph and, given the arrays of the channels that have
-a term, tells what can be computed, what is missing, and computes it. It knows nothing about the instruments: it works
-on terms. A channel whose term is a kind of the input (a ``SampleSpectrum`` is a ``Spectrum``) is accepted wherever the
-input is that more general term.
+The ontology says in which states of the bench a spectrum has a meaning (``mock:requires``: the dark spectrum with the
+beam blocked...) and that a term is ``mock:derivedFrom`` other terms (``Transmittance`` from the sample, the reference
+and the dark spectra). This module reads these statements in the RDF graph and, given the terms of the channels and of
+the actuators, plans the measurements to do, tells what can be computed and what is missing, and computes it. It
+knows nothing about the instruments: it works on terms. A term that is a kind of the wanted one (a ``SampleSpectrum``
+is a ``Spectrum``) is accepted wherever the wanted one is asked.
 """
-from typing import Callable, Optional
+from dataclasses import dataclass
+from typing import Callable, Iterable, Optional
 
 import numpy as np
 from rdflib import Graph, Namespace, URIRef
@@ -34,6 +36,13 @@ FORMULAS: dict[str, Callable[[dict[str, np.ndarray]], np.ndarray]] = {
 }
 
 
+@dataclass
+class Step:
+    """A measurement of the protocol: what the spectrum will mean and the controls to set before grabbing it"""
+    term: str
+    moves: list  # (actuator module, value)
+
+
 class Derivations:
     """The derivations of an ontology graph
 
@@ -52,6 +61,44 @@ class Derivations:
         for output in set(graph.subjects(MOCK.derivedFrom, None)):
             self.rules[str(output)] = sorted(str(i) for i in graph.objects(output, MOCK.derivedFrom)
                                              if isinstance(i, URIRef))
+        self.requirements: dict[str, list[tuple[str, float]]] = {}  # measurement term -> (control term, value)
+        for term in set(graph.subjects(MOCK.requires, None)):
+            self.requirements[str(term)] = sorted(
+                (str(graph.value(state, MOCK.control)), float(graph.value(state, MOCK.value)))
+                for state in graph.objects(term, MOCK.requires))
+
+    def plan(self, detector_terms: Iterable[str], actuator_terms: dict[str, str]
+             ) -> tuple[list[Step], dict[str, list[str]]]:
+        """The measurements that the channels can make and what blocks the others
+
+        Parameters
+        ----------
+        detector_terms: the terms assigned to the channels of the detectors; a channel can make the measurements that are
+            kinds of its term (a channel with the term *Spectrum* can measure the dark, the reference and the sample)
+        actuator_terms: the term assigned to each actuator, by module name
+
+        Returns
+        -------
+        the steps (the measurement and the moves to do first), and for the measurements that cannot be made the controls
+        for which no actuator has a term
+        """
+        detector_terms = list(detector_terms)
+        steps, problems = [], {}
+        for measurement in sorted(self.requirements):
+            if not any(self.is_a(measurement, term) for term in detector_terms):
+                continue
+            moves, missing = [], []
+            for control, value in self.requirements[measurement]:
+                module = next((m for m, term in sorted(actuator_terms.items()) if self.is_a(term, control)), None)
+                if module is None:
+                    missing.append(control)
+                else:
+                    moves.append((module, value))
+            if missing:
+                problems[measurement] = sorted(set(missing))
+            else:
+                steps.append(Step(measurement, moves))
+        return steps, problems
 
     def _provider(self, wanted: str, available: dict[str, np.ndarray]) -> Optional[str]:
         """The available term standing for the wanted one: the same or a kind of it"""

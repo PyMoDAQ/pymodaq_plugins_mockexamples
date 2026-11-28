@@ -289,22 +289,16 @@ Extensions
   save them. It shows how to use the ``modules_manager``, how to wait for the instruments with callbacks instead of
   blocking the GUI, units on the positions and a clean shutdown. It works with the mock instruments of PyMoDAQ. See
   "How a Dashboard extension works" in the PyMoDAQ documentation.
-* **Ontology Logger** (*extensions/ontology_logger.py*): a DAQ_Logger whose saved data carry the ontology terms assigned
-  to the channels of the instruments. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now): its
-  *Ontology* manager of the Dashboard assigns a term to each channel, and this extension asks the manager to annotate
-  what its worker saves (``semantic_iri`` attribute). A small ontology for the mock instruments is given in
-  *resources/ontology/basic_ontology.ttl* (Turtle, read by the ``rdf`` source): its terms know what they are a kind of, so choosing the concept *Optical signal*
-  and the action *Select the channels of the concept* selects the instruments whose channels are photodiode signals or
-  spectra, whatever the instruments are called. Without ``pymodaq_ontology`` it works as a plain logger.
-* **Spectro Concepts** (*extensions/spectro_concepts.py*): what the ontology terms of the channels let the experiment
-  do, whatever the instruments are called. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now).
-  The experiments ``spectro_lab_a.xml`` and ``spectro_lab_b.xml`` have three simulated spectrometers (plugins
-  *MockSpectroDark*, *MockSpectroReference*, *MockSpectroSample*) with neutral names that differ from one experiment to
-  the other. Assign *Dark spectrum*, *Reference spectrum* and *Sample spectrum* to their channels in the *Ontology*
-  manager: the action *What can I compute?* tells that the *Transmittance* and the *Absorbance* can be computed (the
-  ontology *resources/ontology/spectro_ontology.ttl* says what each one is derived from) or what is missing, and *Grab
-  and compute* shows them live, with the formulas coded in the extension.
-
+* **Spectro Concepts** (*extensions/spectro_concepts.py*): what the ontology terms of the channels let the experiment do,
+  whatever the modules are called. It needs the ``pymodaq_ontology`` package (PyMoDAQ ``dev`` branch for now). The
+  experiments ``spectro_lab_a.xml`` and ``spectro_lab_b.xml`` simulate an absorption bench: one spectrometer
+  (*MockSpectro*), a beam block (*MockBeamBlock*) and a cuvette holder (*MockSampleChanger*), with neutral module names
+  that differ from one experiment to the other. Assign the terms *Spectrum*, *Beam block* and *Cuvette holder* to them in
+  the *Ontology* manager. The ontology *resources/ontology/spectro_ontology.ttl* says in which state of the bench a
+  spectrum is a *Dark spectrum* (beam blocked), a *Reference spectrum* (blank cuvette) or a *Sample spectrum*, and that a
+  *Transmittance* and an *Absorbance* are derived from them. The action *What can I measure?* tells what can be measured
+  and computed, or which actuator term is missing; *Measure and compute* sets the bench for each measurement, grabs, then
+  computes and shows the results, with the formulas coded in the extension.
 
 Installation instructions
 =========================

@@ -20,9 +20,9 @@ from pymodaq_plugins_mockexamples.extensions import spectro_concepts
 from pymodaq_plugins_mockexamples.extensions.spectro_concepts import SpectroConcepts
 
 NS = 'http://example.org/mockexamples#'
-# the names of the modules say nothing: what each one measures is the plugin and, for the user, the term assigned
-MODULES = {'S1': 'MockSpectroSample', 'S2': 'MockSpectroDark', 'S3': 'MockSpectroReference'}
-TERMS = {'S1': NS + 'SampleSpectrum', 'S2': NS + 'DarkSpectrum', 'S3': NS + 'ReferenceSpectrum'}
+# the names of the modules say nothing: what each one is, is the plugin and, for the user, the term assigned
+ACTUATORS = {'M2': 'MockBeamBlock', 'M1': 'MockSampleChanger'}
+TERMS = {'M2': NS + 'BeamBlock', 'M1': NS + 'SampleHolder', 'Spectro': NS + 'Spectrum'}
 
 
 def test_is_a_dashboard_extension():
@@ -43,15 +43,20 @@ def dashboard(qtbot, tmp_path, monkeypatch):
     qtbot.addWidget(dashboard.tree)
 
     creator = dashboard.module_creator
-    detectors = []
-    for name, plugin in MODULES.items():
-        detector = creator.create_detector(name, DAQTypesEnum.DAQ1D)
-        creator.set_detector_type(detector, DAQTypesEnum.DAQ1D, plugin)
-        creator.add_detector(detector)
-        detector.init_hardware_ui(True)
-        detectors.append(detector)
-    qtbot.waitUntil(lambda: all(d.initialized_state for d in detectors), timeout=10000)
-    dashboard.modules_manager.detectors_all = detectors
+    actuators = []
+    for name, plugin in ACTUATORS.items():
+        actuator = creator.create_actuator(name, plugin, 'Simple')
+        creator.set_actuator_type(actuator, plugin)
+        creator.add_actuator(actuator)
+        actuator.init_hardware_ui(True)
+        actuators.append(actuator)
+    detector = creator.create_detector('Spectro', DAQTypesEnum.DAQ1D)
+    creator.set_detector_type(detector, DAQTypesEnum.DAQ1D, 'MockSpectro')
+    creator.add_detector(detector)
+    detector.init_hardware_ui(True)
+    qtbot.waitUntil(lambda: detector.initialized_state and all(a.initialized_state for a in actuators), timeout=10000)
+    dashboard.modules_manager.detectors_all = [detector]
+    dashboard.modules_manager.actuators_all = actuators
     yield dashboard
     QtWidgets.QApplication.processEvents()
     dashboard.quit_fun()
@@ -67,6 +72,7 @@ def extension(dashboard):
 
 def assign(extension, modules):
     manager = extension.ontology_manager
+    manager.update_channels_from_dashboard()
     manager.probe()
     for module in modules:
         channel = next(c for c in manager.channels if c.module == module)
@@ -78,20 +84,27 @@ def test_the_spectro_ontology_is_given_to_the_manager(extension):
     assert NS + 'Transmittance' in extension.ontology_manager.terms
 
 
-def test_nothing_to_compute_without_terms(extension):
-    assert extension.show_what_is_possible().startswith('Nothing can be computed yet')
+def test_nothing_can_be_measured_without_terms(extension):
+    assert extension.show_what_is_possible().startswith('Nothing can be measured yet')
 
 
-def test_the_missing_term_is_named(extension):
-    assign(extension, ['S1', 'S3'])  # sample and reference, no dark
+def test_the_missing_actuator_is_named(extension):
+    assign(extension, ['Spectro', 'M2'])  # no term for the cuvette holder
     text = extension.show_what_is_possible()
-    assert text.startswith('Nothing can be computed yet')
-    assert 'Transmittance needs: Dark spectrum' in text
+    assert text.startswith('Can measure: Dark spectrum')
+    assert 'Sample spectrum needs an actuator with the term: Cuvette holder' in text
 
 
-def test_transmittance_and_absorbance_are_computed_whatever_the_names(extension, qtbot):
-    assign(extension, ['S1', 'S2', 'S3'])
-    assert extension.show_what_is_possible().startswith('Can compute: Transmittance, Absorbance')
-    extension.grab_and_compute()
-    qtbot.waitUntil(lambda: not extension._busy, timeout=15000)
-    assert extension.settings['status'].startswith('Can compute: Transmittance, Absorbance')
+def test_the_protocol_measures_and_computes_whatever_the_names(extension, qtbot):
+    assign(extension, ['Spectro', 'M2', 'M1'])
+    text = extension.show_what_is_possible()
+    assert text.startswith('Can measure: Dark spectrum, Reference spectrum, Sample spectrum')
+    assert 'Then can compute: Transmittance, Absorbance' in text
+    extension.run_protocol()
+    qtbot.waitUntil(lambda: not extension._busy, timeout=30000)
+    assert extension.settings['status'] == 'Computed: Transmittance, Absorbance'
+    assert set(extension._results) == {NS + 'DarkSpectrum', NS + 'ReferenceSpectrum', NS + 'SampleSpectrum'}
+    # the spectra are the ones of the states of the bench: dark level, lamp, lamp through the sample
+    dark, reference, sample = (extension._results[NS + name].mean()
+                               for name in ('DarkSpectrum', 'ReferenceSpectrum', 'SampleSpectrum'))
+    assert dark < 200 < sample < reference

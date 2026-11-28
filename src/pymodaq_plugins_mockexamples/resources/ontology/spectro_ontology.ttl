@@ -11,11 +11,17 @@
 #   mock:quantity     the physical quantity ("intensity", "ratio"...)
 #   mock:unit         its unit ("counts", "1" for a pure number)
 #   mock:derivedFrom  the terms it is computed from; mock:formula tells how (documentation, the code is in the extension)
+#   mock:requires     the states of the bench in which a spectrum has this meaning: the same spectrometer gives the
+#                     dark spectrum with the beam blocked, the reference with the blank cuvette, the sample with the
+#                     sample cuvette. A state says which control it is a value of (mock:control) and which one (mock:value).
 
 mock:quantity a owl:AnnotationProperty ; rdfs:label "quantity"@en .
 mock:unit a owl:AnnotationProperty ; rdfs:label "unit"@en .
 mock:formula a owl:AnnotationProperty ; rdfs:label "formula"@en .
 mock:derivedFrom a owl:ObjectProperty ; rdfs:label "derived from"@en .
+mock:requires a owl:ObjectProperty ; rdfs:label "requires"@en .
+mock:control a owl:AnnotationProperty ; rdfs:label "control"@en .
+mock:value a owl:AnnotationProperty ; rdfs:label "value"@en .
 
 mock:Signal a owl:Class ; rdfs:subClassOf sosa:ObservableProperty ;
     rdfs:label "Signal"@en ; skos:definition "Any signal measured by a detector."@en .
@@ -25,13 +31,16 @@ mock:Spectrum a owl:Class ; rdfs:subClassOf mock:Signal ;
     mock:quantity "intensity" ; mock:unit "counts" .
 
 mock:DarkSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
-    rdfs:label "Dark spectrum"@en ; skos:definition "Spectrum with no light: the offset of the detector."@en .
+    rdfs:label "Dark spectrum"@en ; skos:definition "Spectrum with no light: the offset of the detector."@en ;
+    mock:requires mock:BeamBlocked .
 
 mock:ReferenceSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
-    rdfs:label "Reference spectrum"@en ; skos:definition "Spectrum of the lamp alone, without the sample."@en .
+    rdfs:label "Reference spectrum"@en ; skos:definition "Spectrum of the lamp alone, without the sample."@en ;
+    mock:requires mock:BeamOpen , mock:BlankInBeam .
 
 mock:SampleSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
-    rdfs:label "Sample spectrum"@en ; skos:definition "Spectrum of the lamp after the sample."@en .
+    rdfs:label "Sample spectrum"@en ; skos:definition "Spectrum of the lamp after the sample."@en ;
+    mock:requires mock:BeamOpen , mock:SampleInBeam .
 
 mock:Transmittance a owl:Class ; rdfs:subClassOf mock:Signal ;
     rdfs:label "Transmittance"@en ; skos:definition "Fraction of the light that goes through the sample."@en ;
@@ -48,6 +57,14 @@ mock:Absorbance a owl:Class ; rdfs:subClassOf mock:Signal ;
 mock:Control a owl:Class ; rdfs:subClassOf sosa:ActuatableProperty ;
     rdfs:label "Control"@en ; skos:definition "Anything the experiment sets."@en .
 
-mock:Wavelength a owl:Class ; rdfs:subClassOf mock:Control ;
-    rdfs:label "Wavelength"@en ; skos:definition "Wavelength selected by a monochromator or a laser."@en ;
-    mock:quantity "length" ; mock:unit "nm" .
+mock:BeamBlock a owl:Class ; rdfs:subClassOf mock:Control ;
+    rdfs:label "Beam block"@en ; skos:definition "Blocks the beam (1) or lets it through (0)."@en .
+
+mock:SampleHolder a owl:Class ; rdfs:subClassOf mock:Control ;
+    rdfs:label "Cuvette holder"@en ; skos:definition "Puts the blank cuvette (0) or the cuvette with the sample (1) in the beam."@en .
+
+# the states of the controls (not terms to assign: they are what the terms above require)
+mock:BeamBlocked mock:control mock:BeamBlock ; mock:value 1 ; rdfs:label "beam blocked" .
+mock:BeamOpen mock:control mock:BeamBlock ; mock:value 0 ; rdfs:label "beam open" .
+mock:BlankInBeam mock:control mock:SampleHolder ; mock:value 0 ; rdfs:label "blank cuvette in the beam" .
+mock:SampleInBeam mock:control mock:SampleHolder ; mock:value 1 ; rdfs:label "sample cuvette in the beam" .
