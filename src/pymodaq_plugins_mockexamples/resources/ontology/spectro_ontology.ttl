@@ -1,4 +1,5 @@
 @prefix mock: <http://example.org/mockexamples#> .
+@prefix pq: <https://pymodaq.cnrs.fr/ontology#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
@@ -11,7 +12,8 @@
 #   mock:quantity     the physical quantity ("intensity", "ratio"...)
 #   mock:unit         its unit ("counts", "1" for a pure number)
 #   mock:derivedFrom  the terms it is computed from; mock:formula tells how (documentation, the code is in the extension)
-#   mock:requires     the states of the bench in which a spectrum has this meaning: the same spectrometer gives the
+#   pq:requiresState  (a predicate of PyMoDAQ, read by the ontology manager) the states of the bench in which a
+#                     spectrum has this meaning: the same spectrometer gives the
 #                     dark spectrum with the beam blocked, the reference with the reference cuvette, the sample with the
 #                     sample cuvette. A state is a kind of control (Beam blocked is a Beam block). The value of the
 #                     actuator that stands for a state is not here: it depends on the bench, the user associates it in
@@ -21,7 +23,6 @@ mock:quantity a owl:AnnotationProperty ; rdfs:label "quantity"@en .
 mock:unit a owl:AnnotationProperty ; rdfs:label "unit"@en .
 mock:formula a owl:AnnotationProperty ; rdfs:label "formula"@en .
 mock:derivedFrom a owl:ObjectProperty ; rdfs:label "derived from"@en .
-mock:requires a owl:ObjectProperty ; rdfs:label "requires"@en .
 
 mock:Signal a owl:Class ; rdfs:subClassOf sosa:ObservableProperty ;
     rdfs:label "Signal"@en ; skos:definition "Any signal measured by a detector."@en .
@@ -32,15 +33,15 @@ mock:Spectrum a owl:Class ; rdfs:subClassOf mock:Signal ;
 
 mock:DarkSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
     rdfs:label "Dark spectrum"@en ; skos:definition "Spectrum with no light: the offset of the detector."@en ;
-    mock:requires mock:BeamBlocked .
+    pq:requiresState mock:BeamBlocked .
 
 mock:ReferenceSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
     rdfs:label "Reference spectrum"@en ; skos:definition "Spectrum of the lamp alone, without the sample."@en ;
-    mock:requires mock:BeamOpen , mock:ReferenceInBeam .
+    pq:requiresState mock:BeamOpen , mock:ReferenceInBeam .
 
 mock:SampleSpectrum a owl:Class ; rdfs:subClassOf mock:Spectrum ;
     rdfs:label "Sample spectrum"@en ; skos:definition "Spectrum of the lamp after the sample."@en ;
-    mock:requires mock:BeamOpen , mock:SampleInBeam .
+    pq:requiresState mock:BeamOpen , mock:SampleInBeam .
 
 mock:Transmittance a owl:Class ; rdfs:subClassOf mock:Signal ;
     rdfs:label "Transmittance"@en ; skos:definition "Fraction of the light that goes through the sample."@en ;

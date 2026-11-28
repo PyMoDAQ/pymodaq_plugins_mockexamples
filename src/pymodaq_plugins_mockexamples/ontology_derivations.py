@@ -1,6 +1,6 @@
 """What the terms of the channels let the experiment do: the statements of an ontology about measuring and computing
 
-The ontology says in which states of the bench a spectrum has a meaning (``mock:requires``: the dark spectrum with the
+The ontology says in which states of the bench a spectrum has a meaning (``pq:requiresState``: the dark spectrum with the
 beam blocked...) and that a term is ``mock:derivedFrom`` other terms (``Transmittance`` from the sample, the reference
 and the dark spectra). This module reads these statements in the RDF graph and, given the terms of the channels and of
 the actuators, plans the measurements to do, tells what can be computed and what is missing, and computes it. It
@@ -14,6 +14,7 @@ import numpy as np
 from rdflib import Graph, Namespace, URIRef
 
 MOCK = Namespace('http://example.org/mockexamples#')
+REQUIRES_STATE = URIRef('https://pymodaq.cnrs.fr/ontology#requiresState')  # read by the ontology manager too
 SAMPLE, REFERENCE, DARK = (str(MOCK[name]) for name in ('SampleSpectrum', 'ReferenceSpectrum', 'DarkSpectrum'))
 TRANSMITTANCE, ABSORBANCE = str(MOCK.Transmittance), str(MOCK.Absorbance)
 
@@ -62,8 +63,8 @@ class Derivations:
             self.rules[str(output)] = sorted(str(i) for i in graph.objects(output, MOCK.derivedFrom)
                                              if isinstance(i, URIRef))
         self.requirements: dict[str, list[str]] = {}  # measurement term -> the states of the bench it requires
-        for term in set(graph.subjects(MOCK.requires, None)):
-            self.requirements[str(term)] = sorted(str(state) for state in graph.objects(term, MOCK.requires))
+        for term in set(graph.subjects(REQUIRES_STATE, None)):
+            self.requirements[str(term)] = sorted(str(state) for state in graph.objects(term, REQUIRES_STATE))
 
     def plan(self, detector_terms: Iterable[str],
              moves_for_states: Callable[[list[str]], tuple[list[tuple[str, float]], list[str]]]
