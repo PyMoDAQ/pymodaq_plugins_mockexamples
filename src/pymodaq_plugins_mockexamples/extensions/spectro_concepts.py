@@ -143,8 +143,8 @@ class SpectroConcepts(CustomExt):
         else:
             lines.append('Nothing can be measured yet (assign a term to the spectrometer)')
         for step in steps:
-            lines.append(f'  {self._label(step.term)}: ' + ', '.join(f'{module} = {value:g}'
-                                                                      for module, value in step.moves))
+            moves = ', '.join(f'{module} = {value:g}' for module, value in step.moves)
+            lines.append(f'  {self._label(step.term)}: {moves}')
         for term, controls in problems.items():
             states = ', '.join(self._label(c) for c in controls)
             lines.append(f'{self._label(term)} needs a value of an actuator for: {states}')
